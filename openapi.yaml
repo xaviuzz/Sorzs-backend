@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Sorzs API
+  version: 0.1.0
+paths:
+  /health.check:
+    post:
+      operationId: healthCheck
+      summary: Tells whether the service is alive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HealthCheckCall"
+      responses:
+        "200":
+          description: ok, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckReply"
+        "400":
+          description: unreadable JSON or missing callId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransportError"
+components:
+  schemas:
+    CallHeader:
+      type: object
+      required: [callId]
+      properties:
+        callId:
+          type: string
+          minLength: 1
+    HealthCheckCall:
+      type: object
+      required: [header]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+    ReplyHeader:
+      type: object
+      required: [callId, status]
+      properties:
+        callId:
+          type: string
+        status:
+          type: string
+          enum: [ok, error]
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_BODY, INTERNAL_ERROR]
+        message:
+          type: string
+    HealthCheckReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [ok]
+            - $ref: "#/components/schemas/ErrorBody"
+    TransportError:
+      $ref: "#/components/schemas/ErrorBody"
