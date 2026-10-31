@@ -49,6 +49,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TransportError"
+  /sources.inspect:
+    post:
+      operationId: sourcesInspect
+      summary: Reads the title and favicon a page offers, registering nothing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourcesInspectCall"
+      responses:
+        "200":
+          description: the title and favicon, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesInspectReply"
+        "400":
+          description: unreadable JSON or missing callId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransportError"
   /sources.list:
     post:
       operationId: sourcesList
@@ -128,14 +151,21 @@ components:
             - $ref: "#/components/schemas/ErrorBody"
     SourceEntry:
       type: object
-      required: [sourceId, name, address]
+      required: [sourceId, name, address, title, favicon]
       properties:
         sourceId:
           type: string
         name:
           type: string
+          nullable: true
         address:
           type: string
+        title:
+          type: string
+          nullable: true
+        favicon:
+          type: string
+          nullable: true
     SourcesAddCall:
       type: object
       required: [header, body]
@@ -144,7 +174,7 @@ components:
           $ref: "#/components/schemas/CallHeader"
         body:
           type: object
-          required: [address, name]
+          required: [address]
           properties:
             address:
               type: string
@@ -159,6 +189,36 @@ components:
         body:
           oneOf:
             - $ref: "#/components/schemas/SourceEntry"
+            - $ref: "#/components/schemas/ErrorBody"
+    SourcesInspectCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [address]
+          properties:
+            address:
+              type: string
+    SourcesInspectReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - type: object
+              required: [title, favicon]
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                favicon:
+                  type: string
+                  nullable: true
             - $ref: "#/components/schemas/ErrorBody"
     SourcesListCall:
       type: object
