@@ -19,6 +19,19 @@ test("POST /health.check answers 200 ok end to end", async () => {
 	});
 });
 
+test("a source added over HTTP shows in the list", async () => {
+	await sut.addSource("e-2", "https://example.com", "Example");
+
+	await sut.listSources("e-3");
+
+	expect(await sut.reply()).toMatchObject({
+		header: { callId: "e-3", status: "ok" },
+		body: {
+			sources: [{ name: "Example", address: "https://example.com" }],
+		},
+	});
+});
+
 test("an unknown URL answers 404", async () => {
 	await sut.callUnknownUrl();
 
@@ -38,6 +51,23 @@ class SUT {
 	async callHealthCheck(callId: string): Promise<void> {
 		const payload = JSON.stringify({ header: { callId } });
 		await this.post("health.check", payload);
+	}
+
+	async addSource(
+		callId: string,
+		address: string,
+		name: string,
+	): Promise<void> {
+		const payload = JSON.stringify({
+			header: { callId },
+			body: { address, name },
+		});
+		await this.post("sources.add", payload);
+	}
+
+	async listSources(callId: string): Promise<void> {
+		const payload = JSON.stringify({ header: { callId } });
+		await this.post("sources.list", payload);
 	}
 
 	async callUnknownUrl(): Promise<void> {

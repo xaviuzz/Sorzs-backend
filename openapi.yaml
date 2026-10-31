@@ -26,6 +26,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TransportError"
+  /sources.add:
+    post:
+      operationId: sourcesAdd
+      summary: Adds a source to the user's list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourcesAddCall"
+      responses:
+        "200":
+          description: the created entry, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesAddReply"
+        "400":
+          description: unreadable JSON or missing callId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransportError"
+  /sources.list:
+    post:
+      operationId: sourcesList
+      summary: Lists the user's sources in order of addition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourcesListCall"
+      responses:
+        "200":
+          description: the entries, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesListReply"
+        "400":
+          description: unreadable JSON or missing callId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransportError"
 components:
   schemas:
     CallHeader:
@@ -58,7 +104,11 @@ components:
       properties:
         code:
           type: string
-          enum: [INVALID_BODY, INTERNAL_ERROR]
+          enum:
+            - INVALID_BODY
+            - SOURCE_ALREADY_REGISTERED
+            - SOURCE_NAME_TAKEN
+            - INTERNAL_ERROR
         message:
           type: string
     HealthCheckReply:
@@ -75,6 +125,64 @@ components:
                 status:
                   type: string
                   enum: [ok]
+            - $ref: "#/components/schemas/ErrorBody"
+    SourceEntry:
+      type: object
+      required: [sourceId, name, address]
+      properties:
+        sourceId:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+    SourcesAddCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [address, name]
+          properties:
+            address:
+              type: string
+            name:
+              type: string
+    SourcesAddReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/SourceEntry"
+            - $ref: "#/components/schemas/ErrorBody"
+    SourcesListCall:
+      type: object
+      required: [header]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+    SourcesListReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - type: object
+              required: [sources]
+              properties:
+                sources:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SourceEntry"
             - $ref: "#/components/schemas/ErrorBody"
     TransportError:
       $ref: "#/components/schemas/ErrorBody"

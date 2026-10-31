@@ -1,7 +1,10 @@
+import { InMemorySourceListRepository } from "../infrastructure/InMemorySourceListRepository.ts";
 import type { Routes } from "../Routes.ts";
 import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";
 import type { Operation } from "./Operation.ts";
+import { AddSource } from "./sources/AddSource.ts";
+import { ListSources } from "./sources/ListSources.ts";
 
 export class OperationRegistry {
 	private readonly operationsByName = new Map<string, Operation>();
@@ -13,7 +16,12 @@ export class OperationRegistry {
 	}
 
 	static standard(): OperationRegistry {
-		return new OperationRegistry([new JsonOperation(new HealthCheck())]);
+		const repository = new InMemorySourceListRepository();
+		return new OperationRegistry([
+			new JsonOperation(new HealthCheck()),
+			new JsonOperation(new AddSource(repository)),
+			new JsonOperation(new ListSources(repository)),
+		]);
 	}
 
 	routes(): Routes {
