@@ -11,18 +11,19 @@ export class Body {
 	}
 
 	static from(raw: unknown): Body {
-		const isObject = typeof raw === "object" && raw !== null;
-		if (!isObject) {
-			throw new InvalidCallError("body must be an object");
-		}
+		Body.requireObject(raw);
 		return new Body(raw as Fields);
 	}
 
 	requireText(field: string): string {
 		const value = this.fields[field];
-		if (typeof value !== "string") {
+		if (typeof value !== "string")
 			throw new InvalidBodyError(`${field} is required`);
-		}
 		return value;
+	}
+
+	private static requireObject(raw: unknown): void {
+		const isObject = typeof raw === "object" && raw !== null;
+		if (!isObject) throw new InvalidCallError("body must be an object");
 	}
 }

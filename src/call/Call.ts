@@ -39,9 +39,7 @@ export class Call {
 		const callId = header.callId;
 		const isText = typeof callId === "string";
 		const isPresent = isText && callId.length > 0;
-		if (!isPresent) {
-			throw new InvalidCallError("header.callId is required");
-		}
+		if (!isPresent) throw new InvalidCallError("header.callId is required");
 		return callId;
 	}
 
@@ -55,9 +53,7 @@ export class Call {
 
 	private static asRecord(value: unknown, problem: string): Fields {
 		const isObject = typeof value === "object" && value !== null;
-		if (!isObject) {
-			throw new InvalidCallError(problem);
-		}
+		if (!isObject) throw new InvalidCallError(problem);
 		return value as Fields;
 	}
 }

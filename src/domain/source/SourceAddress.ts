@@ -7,21 +7,22 @@ export class SourceAddress {
 
 	static from(raw: string): SourceAddress {
 		const text = raw.trim();
-		const isWebAddress = SourceAddress.isWebAddress(text);
-		if (!isWebAddress) {
-			throw new InvalidAddressError(
-				"address must be a complete http or https address",
-			);
-		}
+		SourceAddress.requireWebAddress(text);
 		return new SourceAddress(text);
 	}
 
+	private static requireWebAddress(text: string): void {
+		const isWebAddress = SourceAddress.isWebAddress(text);
+		if (!isWebAddress)
+			throw new InvalidAddressError(
+				"address must be a complete http or https address",
+			);
+	}
+
 	private static isWebAddress(text: string): boolean {
-		let isWebAddress = false;
-		if (URL.canParse(text)) {
-			const protocol = new URL(text).protocol;
-			isWebAddress = WEB_PROTOCOLS.includes(protocol);
-		}
+		if (!URL.canParse(text)) return false;
+		const protocol = new URL(text).protocol;
+		const isWebAddress = WEB_PROTOCOLS.includes(protocol);
 		return isWebAddress;
 	}
 

@@ -23,17 +23,14 @@ export class SourceList {
 		const repeated = this.held.find((entry) =>
 			entry.isForSameAddressAs(source),
 		);
-		if (repeated) {
+		if (repeated)
 			throw new AddressAlreadyRegisteredError(
 				"that address is already in your list",
 			);
-		}
 	}
 
 	private refuseRepeatedName(name: SourceName): void {
 		const repeated = this.held.find((entry) => entry.isNamed(name));
-		if (repeated) {
-			throw new NameTakenError("that name is already in your list");
-		}
+		if (repeated) throw new NameTakenError("that name is already in your list");
 	}
 }
