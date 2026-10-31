@@ -1,4 +1,5 @@
 import { beforeEach, expect, test } from "bun:test";
+import { PageInfo } from "../../src/domain/source/PageInfo.ts";
 import { Source } from "../../src/domain/source/Source.ts";
 import { SourceAddress } from "../../src/domain/source/SourceAddress.ts";
 import { SourceList } from "../../src/domain/source-list/SourceList.ts";
@@ -35,12 +36,15 @@ class SUT {
 
 	async saveListWith(address: string, name: string): Promise<void> {
 		const list = new SourceList();
-		const source = Source.register(SourceAddress.from(address));
+		const source = Source.register(
+			SourceAddress.from(address),
+			PageInfo.none(),
+		);
 		list.add(source, SourceName.from(name));
 		await this.repository.save(list);
 	}
 
-	names(): string[] {
+	names(): (string | null)[] {
 		const entries = this.loaded.entries();
 		return entries.map((entry) => entry.toJSON().name);
 	}

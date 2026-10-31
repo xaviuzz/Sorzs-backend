@@ -57,3 +57,35 @@ test("its refusal carries the invalid body code", () => {
 
 	expect(refusal.code).toBe("INVALID_BODY");
 });
+
+test("an empty name given as optional means no name", () => {
+	const name = SourceName.fromOptional("");
+
+	expect(name.toJSON()).toBeNull();
+});
+
+test("an optional name of only spaces means no name", () => {
+	const name = SourceName.fromOptional("    ");
+
+	expect(name.toJSON()).toBeNull();
+});
+
+test("an optional name keeps the text it is given", () => {
+	const name = SourceName.fromOptional("  Docs ");
+
+	expect(name.toJSON()).toBe("Docs");
+});
+
+test("an optional name is still limited to 60 characters", () => {
+	expect(() => SourceName.fromOptional("a".repeat(61))).toThrow(
+		InvalidNameError,
+	);
+});
+
+test("no name is equal to no other name", () => {
+	const none = SourceName.none();
+
+	expect(none.equals(SourceName.none())).toBe(false);
+	expect(none.equals(SourceName.from("Docs"))).toBe(false);
+	expect(SourceName.from("Docs").equals(none)).toBe(false);
+});

@@ -11,6 +11,18 @@ export class SourceName {
 		return new SourceName(text);
 	}
 
+	static fromOptional(raw: string): SourceName {
+		const text = raw.trim();
+		const isGiven = text.length > 0;
+		let name = SourceName.none();
+		if (isGiven) name = SourceName.from(text);
+		return name;
+	}
+
+	static none(): SourceName {
+		return new SourceName("");
+	}
+
 	private static requireValidLength(text: string): void {
 		const isPresent = text.length > 0;
 		const isShortEnough = text.length <= LONGEST_NAME;
@@ -22,12 +34,24 @@ export class SourceName {
 	}
 
 	equals(other: SourceName): boolean {
+		const bothGiven = this.isGiven() && other.isGiven();
 		const mine = this.text.toLowerCase();
 		const theirs = other.text.toLowerCase();
-		return mine === theirs;
+		const isSameName = bothGiven && mine === theirs;
+		return isSameName;
+	}
+
+	toJSON(): string | null {
+		let json: string | null = null;
+		if (this.isGiven()) json = this.text;
+		return json;
 	}
 
 	toString(): string {
 		return this.text;
+	}
+
+	private isGiven(): boolean {
+		return this.text.length > 0;
 	}
 }

@@ -1,9 +1,11 @@
+import { HttpPageReader } from "../infrastructure/HttpPageReader.ts";
 import { InMemorySourceListRepository } from "../infrastructure/InMemorySourceListRepository.ts";
 import type { Routes } from "../Routes.ts";
 import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";
 import type { Operation } from "./Operation.ts";
 import { AddSource } from "./sources/AddSource.ts";
+import { InspectSource } from "./sources/InspectSource.ts";
 import { ListSources } from "./sources/ListSources.ts";
 
 export class OperationRegistry {
@@ -17,9 +19,11 @@ export class OperationRegistry {
 
 	static standard(): OperationRegistry {
 		const repository = new InMemorySourceListRepository();
+		const reader = new HttpPageReader();
 		return new OperationRegistry([
 			new JsonOperation(new HealthCheck()),
-			new JsonOperation(new AddSource(repository)),
+			new JsonOperation(new AddSource(repository, reader)),
+			new JsonOperation(new InspectSource(reader)),
 			new JsonOperation(new ListSources(repository)),
 		]);
 	}

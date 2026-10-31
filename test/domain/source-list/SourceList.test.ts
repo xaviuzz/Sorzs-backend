@@ -1,4 +1,5 @@
 import { beforeEach, expect, test } from "bun:test";
+import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
 import { Source } from "../../../src/domain/source/Source.ts";
 import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
 import { AddressAlreadyRegisteredError } from "../../../src/domain/source-list/AddressAlreadyRegisteredError.ts";
@@ -97,6 +98,27 @@ test("a refusal changes nothing in the list", () => {
 	expect(sut.names()).toEqual(["Docs"]);
 });
 
+test("entries without a name coexist", () => {
+	sut.addUnnamed("https://example.com");
+	sut.addUnnamed("https://example.org");
+
+	expect(sut.names()).toEqual([null, null]);
+});
+
+test("an entry without a name does not block a name", () => {
+	sut.addUnnamed("https://example.com");
+	sut.add("https://example.org", "Docs");
+
+	expect(sut.names()).toEqual([null, "Docs"]);
+});
+
+test("still refuses a repeated name ignoring letter case beside unnamed entries", () => {
+	sut.addUnnamed("https://example.com");
+	sut.add("https://example.org", "Docs");
+
+	expect(() => sut.add("https://example.net", "dOCS")).toThrow(NameTakenError);
+});
+
 test("its refusals carry their contract codes", () => {
 	expect(new AddressAlreadyRegisteredError("x").code).toBe(
 		"SOURCE_ALREADY_REGISTERED",
@@ -108,12 +130,23 @@ class SUT {
 	private readonly list = new SourceList();
 
 	add(address: string, name: string) {
-		const source = Source.register(SourceAddress.from(address));
+		const source = Source.register(
+			SourceAddress.from(address),
+			PageInfo.none(),
+		);
 		return this.list.add(source, SourceName.from(name));
 	}
 
-	entries(): { address: string; name: string }[] {
-		const described: { address: string; name: string }[] = [];
+	addUnnamed(address: string) {
+		const source = Source.register(
+			SourceAddress.from(address),
+			PageInfo.none(),
+		);
+		return this.list.add(source, SourceName.none());
+	}
+
+	entries(): { address: string; name: string | null }[] {
+		const described: { address: string; name: string | null }[] = [];
 		for (const entry of this.list.entries()) {
 			const { address, name } = entry.toJSON();
 			described.push({ address, name });
@@ -121,8 +154,8 @@ class SUT {
 		return described;
 	}
 
-	names(): string[] {
-		const names: string[] = [];
+	names(): (string | null)[] {
+		const names: (string | null)[] = [];
 		for (const entry of this.list.entries()) {
 			names.push(entry.toJSON().name);
 		}

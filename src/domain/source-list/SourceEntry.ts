@@ -1,7 +1,13 @@
 import type { Source } from "../source/Source.ts";
 import type { SourceName } from "./SourceName.ts";
 
-type EntryJson = { sourceId: string; name: string; address: string };
+type EntryJson = {
+	sourceId: string;
+	name: string | null;
+	address: string;
+	title: string | null;
+	favicon: string | null;
+};
 
 export class SourceEntry {
 	constructor(
@@ -18,8 +24,8 @@ export class SourceEntry {
 	}
 
 	toJSON(): EntryJson {
-		const { sourceId, address } = this.source.toJSON();
-		const name = this.name.toString();
-		return { sourceId, name, address };
+		const { sourceId, address, title, favicon } = this.source.toJSON();
+		const name = this.name.toJSON();
+		return { sourceId, name, address, title, favicon };
 	}
 }

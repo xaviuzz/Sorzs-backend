@@ -22,6 +22,12 @@ export class Body {
 		return value;
 	}
 
+	optionalText(field: string): string {
+		const isLeftOut = !(field in this.fields);
+		if (isLeftOut) return "";
+		return this.requireText(field);
+	}
+
 	private static requireObject(raw: unknown): void {
 		const isObject = typeof raw === "object" && raw !== null;
 		if (!isObject) throw new InvalidCallError("body must be an object");
