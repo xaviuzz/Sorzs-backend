@@ -1,4 +1,8 @@
-export type ErrorCode = "INVALID_BODY" | "INTERNAL_ERROR";
+export type ErrorCode =
+	| "INVALID_BODY"
+	| "SOURCE_ALREADY_REGISTERED"
+	| "SOURCE_NAME_TAKEN"
+	| "INTERNAL_ERROR";
 
 type Status = "ok" | "error";
 
