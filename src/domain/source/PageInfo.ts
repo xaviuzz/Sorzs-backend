@@ -1,5 +1,6 @@
 import { FaviconAddress } from "./FaviconAddress.ts";
 import { PageTitle } from "./PageTitle.ts";
+import type { SourceAddress } from "./SourceAddress.ts";
 
 export class PageInfo {
 	constructor(
@@ -9,6 +10,19 @@ export class PageInfo {
 
 	static none(): PageInfo {
 		return new PageInfo(PageTitle.none(), FaviconAddress.none());
+	}
+
+	hasTitle(): boolean {
+		return this.title.isPresent();
+	}
+
+	toCandidateJSON(address: SourceAddress): {
+		address: string;
+		title: string | null;
+		favicon: string | null;
+	} {
+		const { title, favicon } = this.toJSON();
+		return { address: address.toString(), title, favicon };
 	}
 
 	toJSON(): { title: string | null; favicon: string | null } {

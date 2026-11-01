@@ -13,6 +13,11 @@ export class PageTitle {
 		return new PageTitle("");
 	}
 
+	isPresent(): boolean {
+		const isPresent = this.text.length > 0;
+		return isPresent;
+	}
+
 	toJSON(): string | null {
 		let json: string | null = null;
 		if (this.text.length > 0) json = this.text;

@@ -26,7 +26,7 @@ test("answers the title and favicon the page offers", async () => {
 	expect(sut.status()).toBe(200);
 	const reply = await sut.reply();
 	expect(reply.header).toEqual({ callId: "i-1", status: "ok" });
-	expect(reply.body).toEqual({
+	expect(reply.body).toMatchObject({
 		title: "Example",
 		favicon: "https://example.com/i.png",
 	});
@@ -36,7 +36,70 @@ test("answers null for each part the page does not offer", async () => {
 	await sut.inspect({ address: "https://example.com" });
 
 	const reply = await sut.reply();
-	expect(reply.body).toEqual({ title: null, favicon: null });
+	expect(reply.body).toEqual({ title: null, favicon: null, candidates: [] });
+});
+
+test("offers the pasted address as a candidate when it has a title", async () => {
+	sut.pageOffers("https://example.com", "Example", "https://example.com/i.png");
+
+	await sut.inspect({ address: "https://example.com" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({
+		candidates: [
+			{
+				address: "https://example.com",
+				title: "Example",
+				favicon: "https://example.com/i.png",
+			},
+		],
+	});
+});
+
+test("reads every tramo of a deep address", async () => {
+	await sut.inspect({ address: "https://talk.com/a/b" });
+
+	expect(sut.addressesRead().sort()).toEqual([
+		"https://talk.com",
+		"https://talk.com/a",
+		"https://talk.com/a/b",
+	]);
+});
+
+test("offers only the tramos with a title, from the root to the pasted address", async () => {
+	sut.pageOffers("https://talk.com", "Talk", "https://talk.com/i.png");
+	sut.pageOffers("https://talk.com/a/b", "Deep", "https://talk.com/b.png");
+
+	await sut.inspect({ address: "https://talk.com/a/b" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({
+		title: "Deep",
+		favicon: "https://talk.com/b.png",
+		candidates: [
+			{ address: "https://talk.com", title: "Talk" },
+			{ address: "https://talk.com/a/b", title: "Deep" },
+		],
+	});
+});
+
+test("keeps title and favicon of the pasted address when it has none", async () => {
+	sut.pageOffers("https://talk.com", "Talk", "https://talk.com/i.png");
+
+	await sut.inspect({ address: "https://talk.com/a" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toEqual({
+		title: null,
+		favicon: null,
+		candidates: [
+			{
+				address: "https://talk.com",
+				title: "Talk",
+				favicon: "https://talk.com/i.png",
+			},
+		],
+	});
 });
 
 test("trims the address before reading", async () => {
