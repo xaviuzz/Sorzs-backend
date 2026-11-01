@@ -56,7 +56,7 @@ test("offers the pasted address as a candidate when it has a title", async () =>
 	});
 });
 
-test("reads every tramo of a deep address", async () => {
+test("reads every candidate address of a deep address", async () => {
 	await sut.inspect({ address: "https://talk.com/a/b" });
 
 	expect(sut.addressesRead().sort()).toEqual([
@@ -66,7 +66,7 @@ test("reads every tramo of a deep address", async () => {
 	]);
 });
 
-test("offers only the tramos with a title, from the root to the pasted address", async () => {
+test("offers only the candidates with a title, from the root to the pasted address", async () => {
 	sut.pageOffers("https://talk.com", "Talk", "https://talk.com/i.png");
 	sut.pageOffers("https://talk.com/a/b", "Deep", "https://talk.com/b.png");
 
