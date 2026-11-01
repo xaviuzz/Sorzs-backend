@@ -172,6 +172,38 @@ test("reads nothing from a site that does not answer", async () => {
 	expect(info).toEqual({ title: null, favicon: null });
 });
 
+test("parallel reads keep each one's own time limit", async () => {
+	sut.respond("/slow", async () => {
+		await Bun.sleep(500);
+		return new Response("<title>Slow</title>", {
+			headers: { "content-type": "text/html" },
+		});
+	});
+	sut.html("/fast", "<title>Fast</title>");
+
+	const [slow, fast] = await sut.readTogether(["/slow", "/fast"], 100);
+
+	expect(slow.title).toBeNull();
+	expect(fast.title).toBe("Fast");
+});
+
+test("parallel reads keep each one's own redirect and size limits", async () => {
+	sut.redirect("/a", "/b");
+	sut.redirect("/b", "/c");
+	sut.redirect("/c", "/d");
+	sut.redirect("/d", "/e");
+	sut.html("/e", "<title>Too far</title>");
+	sut.html("/big", `${" ".repeat(1024 * 1024)}<title>Late</title>`);
+	sut.redirect("/one", "/two");
+	sut.html("/two", "<title>Near</title>");
+
+	const [far, big, near] = await sut.readTogether(["/a", "/big", "/one"]);
+
+	expect(far.title).toBeNull();
+	expect(big.title).toBeNull();
+	expect(near.title).toBe("Near");
+});
+
 type Handler = (request: Request) => Response | Promise<Response>;
 type Described = { title: string | null; favicon: string | null };
 
@@ -220,6 +252,15 @@ class SUT {
 		const reader = new HttpPageReader(timeoutMs);
 		const info = await reader.read(SourceAddress.from(address));
 		return info.toJSON();
+	}
+
+	readTogether(paths: string[], timeoutMs?: number): Promise<Described[]> {
+		const reader = new HttpPageReader(timeoutMs);
+		const reads = paths.map(async (path) => {
+			const info = await reader.read(SourceAddress.from(this.url(path)));
+			return info.toJSON();
+		});
+		return Promise.all(reads);
 	}
 
 	stop(): void {
