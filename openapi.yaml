@@ -211,7 +211,7 @@ components:
         body:
           oneOf:
             - type: object
-              required: [title, favicon]
+              required: [title, favicon, candidates]
               properties:
                 title:
                   type: string
@@ -219,6 +219,19 @@ components:
                 favicon:
                   type: string
                   nullable: true
+                candidates:
+                  type: array
+                  items:
+                    type: object
+                    required: [address, title, favicon]
+                    properties:
+                      address:
+                        type: string
+                      title:
+                        type: string
+                      favicon:
+                        type: string
+                        nullable: true
             - $ref: "#/components/schemas/ErrorBody"
     SourcesListCall:
       type: object
