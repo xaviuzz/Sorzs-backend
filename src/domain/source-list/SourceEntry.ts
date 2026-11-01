@@ -23,6 +23,15 @@ export class SourceEntry {
 		return this.name.equals(name);
 	}
 
+	displayName(): string {
+		const { address, title } = this.source.toJSON();
+		const name = this.name.toJSON();
+		let displayName = address;
+		if (title) displayName = title;
+		if (name) displayName = name;
+		return displayName;
+	}
+
 	toJSON(): EntryJson {
 		const { sourceId, address, title, favicon } = this.source.toJSON();
 		const name = this.name.toJSON();
