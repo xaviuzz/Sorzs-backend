@@ -1,3 +1,4 @@
+import { GoogleLinkSearch } from "../infrastructure/GoogleLinkSearch.ts";
 import { HttpPageReader } from "../infrastructure/HttpPageReader.ts";
 import { InMemorySourceListRepository } from "../infrastructure/InMemorySourceListRepository.ts";
 import type { Routes } from "../Routes.ts";
@@ -7,6 +8,7 @@ import type { Operation } from "./Operation.ts";
 import { AddSource } from "./sources/AddSource.ts";
 import { InspectSource } from "./sources/InspectSource.ts";
 import { ListSources } from "./sources/ListSources.ts";
+import { SearchSources } from "./sources/SearchSources.ts";
 
 export class OperationRegistry {
 	private readonly operationsByName = new Map<string, Operation>();
@@ -25,6 +27,7 @@ export class OperationRegistry {
 			new JsonOperation(new AddSource(repository, reader)),
 			new JsonOperation(new InspectSource(reader)),
 			new JsonOperation(new ListSources(repository)),
+			new JsonOperation(new SearchSources(repository, new GoogleLinkSearch())),
 		]);
 	}
 
