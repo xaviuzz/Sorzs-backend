@@ -95,6 +95,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TransportError"
+  /sources.search:
+    post:
+      operationId: sourcesSearch
+      summary: Searches a term across the user's sources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourcesSearchCall"
+      responses:
+        "200":
+          description: one result per source in list order, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesSearchReply"
+        "400":
+          description: unreadable JSON or missing callId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransportError"
 components:
   schemas:
     CallHeader:
@@ -256,6 +279,44 @@ components:
                   type: array
                   items:
                     $ref: "#/components/schemas/SourceEntry"
+            - $ref: "#/components/schemas/ErrorBody"
+    SourcesSearchCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [query]
+          properties:
+            query:
+              type: string
+    SourcesSearchReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - type: object
+              required: [results]
+              properties:
+                results:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, url, description, source]
+                    properties:
+                      title:
+                        type: string
+                      url:
+                        type: string
+                      description:
+                        type: string
+                      source:
+                        type: string
             - $ref: "#/components/schemas/ErrorBody"
     TransportError:
       $ref: "#/components/schemas/ErrorBody"
