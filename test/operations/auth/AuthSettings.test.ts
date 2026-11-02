@@ -18,6 +18,20 @@ test("a password belongs to its own user", async () => {
 	expect(await sut.acceptsLogin("ana", "p1casso")).toBe(false);
 });
 
+test("a seeded user carries the role written after the password", async () => {
+	expect(await sut.roleOf("xaviuzz")).toBe("admin");
+});
+
+test("a seeded user without a role is a user", async () => {
+	expect(await sut.roleOf("ana")).toBe("user");
+});
+
+test("refuses to start with an unknown role in SEED_USERS", () => {
+	expect(() => sut.startWithUsers("xaviuzz:p1casso:root")).toThrow(
+		"SEED_USERS must be username:password[:role] pairs separated by commas, role being admin or user",
+	);
+});
+
 test("signs with the secret from the environment", () => {
 	expect(sut.recognizesItsOwnToken("xaviuzz")).toBe(true);
 });
@@ -47,7 +61,7 @@ test.each([
 	["an empty pair between commas", "xaviuzz:p1casso,,ana:pueblos"],
 ])("refuses to start with %s in SEED_USERS", (_title, users) => {
 	expect(() => sut.startWithUsers(users)).toThrow(
-		"SEED_USERS must be username:password pairs separated by commas",
+		"SEED_USERS must be username:password[:role] pairs separated by commas, role being admin or user",
 	);
 });
 
@@ -58,6 +72,11 @@ class SUT {
 		const user = await this.settings.users().find(Username.from(name));
 		const accepted = await user.accepts(password);
 		return accepted;
+	}
+
+	async roleOf(name: string): Promise<string> {
+		const user = await this.settings.users().find(Username.from(name));
+		return user.role().toString();
 	}
 
 	recognizesItsOwnToken(name: string): boolean {

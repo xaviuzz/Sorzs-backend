@@ -1,5 +1,6 @@
 import { Password } from "../../domain/user/Password.ts";
 import { RegisteredUser } from "../../domain/user/RegisteredUser.ts";
+import { Role } from "../../domain/user/Role.ts";
 import type { TokenSigner } from "../../domain/user/TokenSigner.ts";
 import { Username } from "../../domain/user/Username.ts";
 import type { Users } from "../../domain/user/Users.ts";
@@ -40,16 +41,23 @@ export class AuthSettings {
 	}
 
 	private static readUser(pair: string): RegisteredUser {
-		const separator = pair.indexOf(":");
-		const name = pair.slice(0, separator);
-		const password = pair.slice(separator + 1);
-		const isWellFormed = separator > 0 && password !== "";
+		const [name = "", password = "", roleText = "user", ...extra] =
+			pair.split(":");
+		const isWellFormed =
+			name !== "" &&
+			password !== "" &&
+			extra.length === 0 &&
+			Role.isKnown(roleText);
 		if (!isWellFormed)
 			throw new InvalidSettingError(
 				"SEED_USERS",
-				"username:password pairs separated by commas",
+				"username:password[:role] pairs separated by commas, role being admin or user",
 			);
-		return new RegisteredUser(Username.from(name), Password.hashing(password));
+		return new RegisteredUser(
+			Username.from(name),
+			Password.hashing(password),
+			Role.named(roleText),
+		);
 	}
 
 	private static require(environment: Environment, setting: string): string {

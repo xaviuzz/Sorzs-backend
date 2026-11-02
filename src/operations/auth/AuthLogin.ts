@@ -20,6 +20,7 @@ export class AuthLogin implements JsonHandler {
 		const accepted = await user.accepts(password);
 		if (!accepted) throw new InvalidCredentialsError();
 		const token = this.signer.sign(name);
-		return { token: token.toString() };
+		const role = user.role();
+		return { token: token.toString(), role: role.toString() };
 	}
 }

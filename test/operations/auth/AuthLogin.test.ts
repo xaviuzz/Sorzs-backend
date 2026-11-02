@@ -1,6 +1,7 @@
 import { beforeEach, expect, test } from "bun:test";
 import { Password } from "../../../src/domain/user/Password.ts";
 import { RegisteredUser } from "../../../src/domain/user/RegisteredUser.ts";
+import { Role } from "../../../src/domain/user/Role.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { HmacTokenSigner } from "../../../src/infrastructure/crypto/HmacTokenSigner.ts";
 import { InMemoryUsers } from "../../../src/infrastructure/memory/InMemoryUsers.ts";
@@ -23,6 +24,18 @@ test("answers a token the signer recognizes for good credentials", async () => {
 	expect(sut.status()).toBe(200);
 	expect(await sut.replyStatus()).toBe("ok");
 	expect(sut.recognizes(await sut.token())).toBe(true);
+});
+
+test("answers the admin role for an admin", async () => {
+	await sut.login("xaviuzz", "p1casso");
+
+	expect(await sut.role()).toBe("admin");
+});
+
+test("answers the user role for a user", async () => {
+	await sut.login("ana", "pueblos");
+
+	expect(await sut.role()).toBe("user");
 });
 
 test("answers INVALID_CREDENTIALS for a wrong password", async () => {
@@ -60,7 +73,9 @@ class SUT {
 				new RegisteredUser(
 					Username.from("xaviuzz"),
 					Password.hashing("p1casso"),
+					Role.admin(),
 				),
+				new RegisteredUser(Username.from("ana"), Password.hashing("pueblos")),
 			]),
 			this.signer,
 		),
@@ -97,6 +112,11 @@ class SUT {
 	async token(): Promise<string> {
 		const body = (await this.body()) as { token: string };
 		return body.token;
+	}
+
+	async role(): Promise<string> {
+		const body = (await this.body()) as { role: string };
+		return body.role;
 	}
 
 	async body(): Promise<unknown> {

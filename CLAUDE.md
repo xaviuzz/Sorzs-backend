@@ -17,7 +17,7 @@ A change is done when test, lint, typecheck and build pass.
 
 The list lives in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. Each row carries its owner; rows saved before owners existed are given to `xaviuzz` on start. A file that cannot be read stops the start. Tests that start a server or the registry pass a temporary folder.
 
-The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS` (`username:password` pairs separated by commas). Development and e2e use `xaviuzz:p1casso,ana:pueblos`; tests take them from `test/AuthEnvironment.ts`.
+The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS` (`username:password[:role]` pairs separated by commas; role is `admin` or `user`, default `user`). Development and e2e use `xaviuzz:p1casso:admin,ana:pueblos`; tests take them from `test/AuthEnvironment.ts`.
 
 ## Stack
 
