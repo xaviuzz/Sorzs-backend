@@ -1,5 +1,5 @@
-import type { Source } from "../source/Source.ts";
-import type { SourceName } from "./SourceName.ts";
+import { Source } from "../source/Source.ts";
+import { SourceName } from "./SourceName.ts";
 
 type EntryJson = {
 	sourceId: string;
@@ -14,6 +14,12 @@ export class SourceEntry {
 		private readonly source: Source,
 		private readonly name: SourceName,
 	) {}
+
+	static fromJSON(json: EntryJson): SourceEntry {
+		const source = Source.fromJSON(json);
+		const name = SourceName.fromJSON(json.name);
+		return new SourceEntry(source, name);
+	}
 
 	isForSameAddressAs(source: Source): boolean {
 		return this.source.hasSameAddressAs(source);

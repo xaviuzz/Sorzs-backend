@@ -1,5 +1,5 @@
-import type { PageInfo } from "./PageInfo.ts";
-import type { SourceAddress } from "./SourceAddress.ts";
+import { PageInfo } from "./PageInfo.ts";
+import { SourceAddress } from "./SourceAddress.ts";
 import { SourceId } from "./SourceId.ts";
 
 type SourceJson = {
@@ -18,6 +18,13 @@ export class Source {
 
 	static register(address: SourceAddress, pageInfo: PageInfo): Source {
 		return new Source(SourceId.generate(), address, pageInfo);
+	}
+
+	static fromJSON(json: SourceJson): Source {
+		const id = SourceId.from(json.sourceId);
+		const address = SourceAddress.from(json.address);
+		const pageInfo = PageInfo.fromJSON(json);
+		return new Source(id, address, pageInfo);
 	}
 
 	hasSameAddressAs(other: Source): boolean {

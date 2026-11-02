@@ -31,3 +31,36 @@ function entryWith(name: string, title: string): SourceEntry {
 	const source = Source.register(address, info);
 	return new SourceEntry(source, SourceName.fromOptional(name));
 }
+
+test("is restored from its JSON as it was", () => {
+	const entry = entryWith("My docs", "Example");
+	const json = entry.toJSON();
+
+	const restored = SourceEntry.fromJSON(json);
+
+	expect(restored.toJSON()).toEqual(json);
+});
+
+test("is restored without name, title or favicon", () => {
+	const entry = entryWith("", "");
+	const json = entry.toJSON();
+
+	const restored = SourceEntry.fromJSON(json);
+
+	expect(restored.toJSON()).toEqual(json);
+});
+
+test("is restored with its favicon", () => {
+	const address = SourceAddress.from("https://example.com/docs");
+	const favicon = FaviconAddress.from("https://example.com/icon.png");
+	const info = new PageInfo(PageTitle.none(), favicon);
+	const entry = new SourceEntry(
+		Source.register(address, info),
+		SourceName.none(),
+	);
+	const json = entry.toJSON();
+
+	const restored = SourceEntry.fromJSON(json);
+
+	expect(restored.toJSON()).toEqual(json);
+});

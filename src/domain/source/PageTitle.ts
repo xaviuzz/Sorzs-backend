@@ -9,6 +9,12 @@ export class PageTitle {
 		return new PageTitle(bounded);
 	}
 
+	static fromJSON(json: string | null): PageTitle {
+		let title = PageTitle.none();
+		if (json !== null) title = PageTitle.from(json);
+		return title;
+	}
+
 	static none(): PageTitle {
 		return new PageTitle("");
 	}

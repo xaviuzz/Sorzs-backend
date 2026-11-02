@@ -19,6 +19,12 @@ export class SourceName {
 		return name;
 	}
 
+	static fromJSON(json: string | null): SourceName {
+		let name = SourceName.none();
+		if (json !== null) name = SourceName.from(json);
+		return name;
+	}
+
 	static none(): SourceName {
 		return new SourceName("");
 	}

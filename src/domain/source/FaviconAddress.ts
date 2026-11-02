@@ -8,6 +8,12 @@ export class FaviconAddress {
 		return FaviconAddress.of(web);
 	}
 
+	static fromJSON(json: string | null): FaviconAddress {
+		let favicon = FaviconAddress.none();
+		if (json !== null) favicon = FaviconAddress.from(json);
+		return favicon;
+	}
+
 	static of(web: WebAddress): FaviconAddress {
 		let favicon = FaviconAddress.none();
 		if (web.isValid()) favicon = new FaviconAddress(web);

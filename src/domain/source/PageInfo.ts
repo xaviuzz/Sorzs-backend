@@ -8,6 +8,15 @@ export class PageInfo {
 		private readonly favicon: FaviconAddress,
 	) {}
 
+	static fromJSON(json: {
+		title: string | null;
+		favicon: string | null;
+	}): PageInfo {
+		const title = PageTitle.fromJSON(json.title);
+		const favicon = FaviconAddress.fromJSON(json.favicon);
+		return new PageInfo(title, favicon);
+	}
+
 	static none(): PageInfo {
 		return new PageInfo(PageTitle.none(), FaviconAddress.none());
 	}
