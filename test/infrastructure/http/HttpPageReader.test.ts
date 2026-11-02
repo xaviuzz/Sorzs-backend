@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { SourceAddress } from "../../src/domain/source/SourceAddress.ts";
-import { HttpPageReader } from "../../src/infrastructure/HttpPageReader.ts";
+import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
+import { HttpPageReader } from "../../../src/infrastructure/http/HttpPageReader.ts";
 
 let sut: SUT;
 

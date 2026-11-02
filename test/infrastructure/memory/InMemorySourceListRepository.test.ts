@@ -1,10 +1,10 @@
 import { beforeEach, expect, test } from "bun:test";
-import { PageInfo } from "../../src/domain/source/PageInfo.ts";
-import { Source } from "../../src/domain/source/Source.ts";
-import { SourceAddress } from "../../src/domain/source/SourceAddress.ts";
-import { SourceList } from "../../src/domain/source-list/SourceList.ts";
-import { SourceName } from "../../src/domain/source-list/SourceName.ts";
-import { InMemorySourceListRepository } from "../../src/infrastructure/InMemorySourceListRepository.ts";
+import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
+import { Source } from "../../../src/domain/source/Source.ts";
+import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
+import { SourceList } from "../../../src/domain/source-list/SourceList.ts";
+import { SourceName } from "../../../src/domain/source-list/SourceName.ts";
+import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 
 let sut: SUT;
 

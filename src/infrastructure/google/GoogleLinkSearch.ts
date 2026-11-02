@@ -1,7 +1,7 @@
-import type { SearchQuery } from "../domain/search/SearchQuery.ts";
-import { SearchResult } from "../domain/search/SearchResult.ts";
-import type { SourceSearch } from "../domain/search/SourceSearch.ts";
-import type { SourceEntry } from "../domain/source-list/SourceEntry.ts";
+import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
+import { SearchResult } from "../../domain/search/SearchResult.ts";
+import type { SourceSearch } from "../../domain/search/SourceSearch.ts";
+import type { SourceEntry } from "../../domain/source-list/SourceEntry.ts";
 
 const TITLE = "Search it on Google";
 const GOOGLE_SEARCH = "https://www.google.com/search";

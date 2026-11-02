@@ -1,5 +1,5 @@
 import { beforeEach, expect, test } from "bun:test";
-import { InMemorySourceListRepository } from "../../../src/infrastructure/InMemorySourceListRepository.ts";
+import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { AddSource } from "../../../src/operations/sources/AddSource.ts";
 import { SearchSources } from "../../../src/operations/sources/SearchSources.ts";

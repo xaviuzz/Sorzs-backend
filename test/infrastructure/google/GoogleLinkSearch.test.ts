@@ -1,13 +1,13 @@
 import { beforeEach, expect, test } from "bun:test";
-import { SearchQuery } from "../../src/domain/search/SearchQuery.ts";
-import { FaviconAddress } from "../../src/domain/source/FaviconAddress.ts";
-import { PageInfo } from "../../src/domain/source/PageInfo.ts";
-import { PageTitle } from "../../src/domain/source/PageTitle.ts";
-import { Source } from "../../src/domain/source/Source.ts";
-import { SourceAddress } from "../../src/domain/source/SourceAddress.ts";
-import { SourceEntry } from "../../src/domain/source-list/SourceEntry.ts";
-import { SourceName } from "../../src/domain/source-list/SourceName.ts";
-import { GoogleLinkSearch } from "../../src/infrastructure/GoogleLinkSearch.ts";
+import { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
+import { FaviconAddress } from "../../../src/domain/source/FaviconAddress.ts";
+import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
+import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
+import { Source } from "../../../src/domain/source/Source.ts";
+import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
+import { SourceEntry } from "../../../src/domain/source-list/SourceEntry.ts";
+import { SourceName } from "../../../src/domain/source-list/SourceName.ts";
+import { GoogleLinkSearch } from "../../../src/infrastructure/google/GoogleLinkSearch.ts";
 
 let sut: SUT;
 

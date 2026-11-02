@@ -2,7 +2,7 @@ import { beforeEach, expect, test } from "bun:test";
 import { FaviconAddress } from "../../../src/domain/source/FaviconAddress.ts";
 import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
 import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
-import { InMemorySourceListRepository } from "../../../src/infrastructure/InMemorySourceListRepository.ts";
+import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { AddSource } from "../../../src/operations/sources/AddSource.ts";
 import { FakePageReader } from "./FakePageReader.ts";

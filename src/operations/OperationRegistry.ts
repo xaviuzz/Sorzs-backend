@@ -1,6 +1,6 @@
-import { GoogleLinkSearch } from "../infrastructure/GoogleLinkSearch.ts";
-import { HttpPageReader } from "../infrastructure/HttpPageReader.ts";
-import { InMemorySourceListRepository } from "../infrastructure/InMemorySourceListRepository.ts";
+import { GoogleLinkSearch } from "../infrastructure/google/GoogleLinkSearch.ts";
+import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
+import { InMemorySourceListRepository } from "../infrastructure/memory/InMemorySourceListRepository.ts";
 import type { Routes } from "../Routes.ts";
 import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";

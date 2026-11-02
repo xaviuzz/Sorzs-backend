@@ -1,4 +1,5 @@
-import type { WebAddress } from "../domain/source/WebAddress.ts";
+import { FaviconAddress } from "../../domain/source/FaviconAddress.ts";
+import type { WebAddress } from "../../domain/source/WebAddress.ts";
 
 export class HtmlHead {
 	private constructor(
@@ -39,7 +40,10 @@ export class HtmlHead {
 		return this.iconReference !== "";
 	}
 
-	iconAddressFrom(page: WebAddress): WebAddress {
-		return page.resolve(this.iconReference);
+	declaredIcon(page: WebAddress): FaviconAddress {
+		let icon = FaviconAddress.none();
+		if (this.declaresIcon())
+			icon = FaviconAddress.of(page.resolve(this.iconReference));
+		return icon;
 	}
 }
