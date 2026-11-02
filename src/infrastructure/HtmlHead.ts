@@ -1,3 +1,5 @@
+import type { WebAddress } from "../domain/source/WebAddress.ts";
+
 export class HtmlHead {
 	private constructor(
 		private readonly title: string,
@@ -37,10 +39,7 @@ export class HtmlHead {
 		return this.iconReference !== "";
 	}
 
-	iconAddressFrom(page: string): string {
-		const canResolve = URL.canParse(this.iconReference, page);
-		let address = "";
-		if (canResolve) address = new URL(this.iconReference, page).toString();
-		return address;
+	iconAddressFrom(page: WebAddress): WebAddress {
+		return page.resolve(this.iconReference);
 	}
 }

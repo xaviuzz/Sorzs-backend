@@ -1,43 +1,43 @@
 import { InvalidAddressError } from "./InvalidAddressError.ts";
-
-const WEB_PROTOCOLS = ["http:", "https:"];
+import { WebAddress } from "./WebAddress.ts";
 
 export class SourceAddress {
-	private constructor(private readonly text: string) {}
+	private constructor(private readonly web: WebAddress) {}
 
 	static from(raw: string): SourceAddress {
-		const text = raw.trim();
-		SourceAddress.requireWebAddress(text);
-		return new SourceAddress(text);
+		const web = new WebAddress(raw.trim());
+		SourceAddress.requireWebAddress(web);
+		return new SourceAddress(web);
 	}
 
-	private static requireWebAddress(text: string): void {
-		const isWebAddress = SourceAddress.isWebAddress(text);
+	private static requireWebAddress(web: WebAddress): void {
+		const isWebAddress = web.isValid();
 		if (!isWebAddress)
 			throw new InvalidAddressError(
 				"address must be a complete http or https address",
 			);
 	}
 
-	private static isWebAddress(text: string): boolean {
-		if (!URL.canParse(text)) return false;
-		const protocol = new URL(text).protocol;
-		const isWebAddress = WEB_PROTOCOLS.includes(protocol);
-		return isWebAddress;
+	equals(other: SourceAddress): boolean {
+		return this.toString() === other.toString();
 	}
 
-	equals(other: SourceAddress): boolean {
-		return this.text === other.text;
+	equalsIgnoringFinalSlash(other: SourceAddress): boolean {
+		return this.web.equalsIgnoringFinalSlash(other.web);
+	}
+
+	prefixes(): SourceAddress[] {
+		const prefixes = [];
+		for (const prefix of this.web.prefixes())
+			prefixes.push(new SourceAddress(prefix));
+		return prefixes;
 	}
 
 	site(): string {
-		const { host, pathname } = new URL(this.text);
-		const path = pathname.replace(/\/$/, "");
-		const site = `${host}${path}`;
-		return site;
+		return this.web.site();
 	}
 
 	toString(): string {
-		return this.text;
+		return this.web.toString();
 	}
 }

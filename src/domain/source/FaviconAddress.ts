@@ -1,4 +1,4 @@
-const WEB_PROTOCOLS = ["http:", "https:"];
+import { WebAddress } from "./WebAddress.ts";
 
 export class FaviconAddress {
 	private constructor(private readonly text: string) {}
@@ -6,19 +6,13 @@ export class FaviconAddress {
 	static from(raw: string): FaviconAddress {
 		const text = raw.trim();
 		let favicon = FaviconAddress.none();
-		if (FaviconAddress.isWebAddress(text)) favicon = new FaviconAddress(text);
+		const isWebAddress = new WebAddress(text).isValid();
+		if (isWebAddress) favicon = new FaviconAddress(text);
 		return favicon;
 	}
 
 	static none(): FaviconAddress {
 		return new FaviconAddress("");
-	}
-
-	private static isWebAddress(text: string): boolean {
-		if (!URL.canParse(text)) return false;
-		const protocol = new URL(text).protocol;
-		const isWebAddress = WEB_PROTOCOLS.includes(protocol);
-		return isWebAddress;
 	}
 
 	toJSON(): string | null {
