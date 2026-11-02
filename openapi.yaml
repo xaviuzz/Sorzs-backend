@@ -12,7 +12,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/HealthCheckCall"
+              $ref: "#/components/schemas/CallWithoutBody"
       responses:
         "200":
           description: ok, or an error carried in the message
@@ -21,11 +21,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthCheckReply"
         "400":
-          description: unreadable JSON or missing callId
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TransportError"
+          $ref: "#/components/responses/TransportError"
   /sources.add:
     post:
       operationId: sourcesAdd
@@ -44,11 +40,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourcesAddReply"
         "400":
-          description: unreadable JSON or missing callId
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TransportError"
+          $ref: "#/components/responses/TransportError"
   /sources.inspect:
     post:
       operationId: sourcesInspect
@@ -67,11 +59,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourcesInspectReply"
         "400":
-          description: unreadable JSON or missing callId
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TransportError"
+          $ref: "#/components/responses/TransportError"
   /sources.list:
     post:
       operationId: sourcesList
@@ -81,7 +69,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourcesListCall"
+              $ref: "#/components/schemas/CallWithoutBody"
       responses:
         "200":
           description: the entries, or an error carried in the message
@@ -90,11 +78,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourcesListReply"
         "400":
-          description: unreadable JSON or missing callId
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TransportError"
+          $ref: "#/components/responses/TransportError"
   /sources.search:
     post:
       operationId: sourcesSearch
@@ -113,12 +97,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/SourcesSearchReply"
         "400":
-          description: unreadable JSON or missing callId
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TransportError"
+          $ref: "#/components/responses/TransportError"
 components:
+  responses:
+    TransportError:
+      description: unreadable JSON or missing callId
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
   schemas:
     CallHeader:
       type: object
@@ -127,7 +114,7 @@ components:
         callId:
           type: string
           minLength: 1
-    HealthCheckCall:
+    CallWithoutBody:
       type: object
       required: [header]
       properties:
@@ -157,6 +144,13 @@ components:
             - INTERNAL_ERROR
         message:
           type: string
+    HealthCheckBody:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
     HealthCheckReply:
       type: object
       required: [header, body]
@@ -165,12 +159,7 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - type: object
-              required: [status]
-              properties:
-                status:
-                  type: string
-                  enum: [ok]
+            - $ref: "#/components/schemas/HealthCheckBody"
             - $ref: "#/components/schemas/ErrorBody"
     SourceEntry:
       type: object
@@ -225,6 +214,31 @@ components:
           properties:
             address:
               type: string
+    InspectCandidate:
+      type: object
+      required: [address, title, favicon]
+      properties:
+        address:
+          type: string
+        title:
+          type: string
+        favicon:
+          type: string
+          nullable: true
+    SourcesInspectBody:
+      type: object
+      required: [title, favicon, candidates]
+      properties:
+        title:
+          type: string
+          nullable: true
+        favicon:
+          type: string
+          nullable: true
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/InspectCandidate"
     SourcesInspectReply:
       type: object
       required: [header, body]
@@ -233,37 +247,16 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - type: object
-              required: [title, favicon, candidates]
-              properties:
-                title:
-                  type: string
-                  nullable: true
-                favicon:
-                  type: string
-                  nullable: true
-                candidates:
-                  type: array
-                  items:
-                    type: object
-                    required: [address, title, favicon]
-                    properties:
-                      address:
-                        type: string
-                      title:
-                        type: string
-                      favicon:
-                        type: string
-                        nullable: true
+            - $ref: "#/components/schemas/SourcesInspectBody"
             - $ref: "#/components/schemas/ErrorBody"
-    SourcesListCall:
+    SourcesListBody:
       type: object
-      required: [header]
+      required: [sources]
       properties:
-        header:
-          $ref: "#/components/schemas/CallHeader"
-        body:
-          type: object
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceEntry"
     SourcesListReply:
       type: object
       required: [header, body]
@@ -272,13 +265,7 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - type: object
-              required: [sources]
-              properties:
-                sources:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/SourceEntry"
+            - $ref: "#/components/schemas/SourcesListBody"
             - $ref: "#/components/schemas/ErrorBody"
     SourcesSearchCall:
       type: object
@@ -292,6 +279,26 @@ components:
           properties:
             query:
               type: string
+    SearchResult:
+      type: object
+      required: [title, url, description, source]
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+    SourcesSearchBody:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
     SourcesSearchReply:
       type: object
       required: [header, body]
@@ -300,23 +307,5 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - type: object
-              required: [results]
-              properties:
-                results:
-                  type: array
-                  items:
-                    type: object
-                    required: [title, url, description, source]
-                    properties:
-                      title:
-                        type: string
-                      url:
-                        type: string
-                      description:
-                        type: string
-                      source:
-                        type: string
+            - $ref: "#/components/schemas/SourcesSearchBody"
             - $ref: "#/components/schemas/ErrorBody"
-    TransportError:
-      $ref: "#/components/schemas/ErrorBody"
