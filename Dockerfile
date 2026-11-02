@@ -3,5 +3,8 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 COPY src ./src
+ENV DATA_DIR=/data
+RUN mkdir -p /data
+VOLUME /data
 EXPOSE 3000
 CMD ["bun", "run", "start"]

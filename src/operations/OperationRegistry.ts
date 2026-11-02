@@ -1,6 +1,6 @@
 import { GoogleLinkSearch } from "../infrastructure/google/GoogleLinkSearch.ts";
 import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
-import { InMemorySourceListRepository } from "../infrastructure/memory/InMemorySourceListRepository.ts";
+import { SqliteSourceListRepository } from "../infrastructure/sqlite/SqliteSourceListRepository.ts";
 import type { Routes } from "../Routes.ts";
 import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";
@@ -19,8 +19,8 @@ export class OperationRegistry {
 		}
 	}
 
-	static standard(): OperationRegistry {
-		const repository = new InMemorySourceListRepository();
+	static standard(dataDir: string): OperationRegistry {
+		const repository = SqliteSourceListRepository.inFolder(dataDir);
 		const reader = new HttpPageReader();
 		return new OperationRegistry([
 			new JsonOperation(new HealthCheck()),

@@ -1,4 +1,7 @@
 import { beforeAll, expect, test } from "bun:test";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { OperationRegistry } from "../src/operations/OperationRegistry.ts";
 import { OpenApiRoutes } from "./OpenApiRoutes.ts";
 
@@ -23,7 +26,8 @@ test("every route in the contract has a registered operation", () => {
 class SUT {
 	static async read(): Promise<SUT> {
 		const contract = await OpenApiRoutes.read("openapi.yaml");
-		const registered = OperationRegistry.standard().names();
+		const dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
+		const registered = OperationRegistry.standard(dataDir).names();
 		return new SUT(contract.names, registered);
 	}
 

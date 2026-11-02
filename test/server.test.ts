@@ -1,4 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Server } from "../src/server.ts";
 
 let sut: SUT;
@@ -45,7 +48,8 @@ test("a GET to an operation URL answers 404", async () => {
 });
 
 class SUT {
-	private readonly server = Server.start(0);
+	private readonly dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
+	private readonly server = Server.start(0, this.dataDir);
 	private response = new Response();
 
 	async callHealthCheck(callId: string): Promise<void> {
@@ -89,6 +93,7 @@ class SUT {
 
 	stop(): void {
 		this.server.stop();
+		rmSync(this.dataDir, { recursive: true, force: true });
 	}
 
 	private async post(path: string, payload: string): Promise<void> {
