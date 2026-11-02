@@ -1,10 +1,12 @@
 import { beforeEach, expect, test } from "bun:test";
 import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
+import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSource } from "../../../src/operations/sources/AddSource.ts";
 import { SearchSources } from "../../../src/operations/sources/SearchSources.ts";
 import { FakePageReader } from "./FakePageReader.ts";
 import { FakeSourceSearch } from "./FakeSourceSearch.ts";
+import { ana, xaviuzz } from "./Owners.ts";
 
 let sut: SUT;
 
@@ -95,6 +97,15 @@ test.each([
 	expect(sut.queriesSearched()).toEqual([]);
 });
 
+test("searches only the sources of the user who asks", async () => {
+	await sut.addSourceAsAna("https://ana.com", "Ana's");
+
+	await sut.search({ query: "bun" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toEqual({ results: [] });
+});
+
 type Reply = { header: Record<string, unknown>; body: unknown };
 
 class SUT {
@@ -102,10 +113,10 @@ class SUT {
 	private readonly reader = new FakePageReader();
 	private readonly searching = new FakeSourceSearch();
 	private readonly operation = new JsonOperation(
-		new SearchSources(this.repository, this.searching),
+		new OwnedBy(xaviuzz, new SearchSources(this.repository, this.searching)),
 	);
 	private readonly adding = new JsonOperation(
-		new AddSource(this.repository, this.reader),
+		new OwnedBy(xaviuzz, new AddSource(this.repository, this.reader)),
 	);
 	private response = new Response();
 
@@ -119,6 +130,21 @@ class SUT {
 
 	answersOnlyWhenTogether(count: number): void {
 		this.searching.answersOnlyWhenTogether(count);
+	}
+
+	async addSourceAsAna(address: string, name: string): Promise<void> {
+		const payload = JSON.stringify({
+			header: { callId: "a-2" },
+			body: { address, name },
+		});
+		const request = new Request("http://x/sources.add", {
+			method: "POST",
+			body: payload,
+		});
+		const operation = new JsonOperation(
+			new OwnedBy(ana, new AddSource(this.repository, this.reader)),
+		);
+		await operation.serve(request);
 	}
 
 	async addSource(address: string, name: string): Promise<void> {

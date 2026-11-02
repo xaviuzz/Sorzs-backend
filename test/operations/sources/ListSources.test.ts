@@ -4,9 +4,11 @@ import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
 import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
 import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
+import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSource } from "../../../src/operations/sources/AddSource.ts";
 import { ListSources } from "../../../src/operations/sources/ListSources.ts";
 import { FakePageReader } from "./FakePageReader.ts";
+import { ana, xaviuzz } from "./Owners.ts";
 
 let sut: SUT;
 
@@ -68,14 +70,22 @@ test("lists the title and favicon learned when each source was added", async () 
 	});
 });
 
+test("lists only the entries of the user who asks", async () => {
+	await sut.addSourceAsAna("https://ana.com", "Ana's");
+
+	await sut.list();
+
+	expect(await sut.body()).toEqual({ sources: [] });
+});
+
 class SUT {
 	private readonly repository = new InMemorySourceListRepository();
 	private readonly reader = new FakePageReader();
 	private readonly operation = new JsonOperation(
-		new ListSources(this.repository),
+		new OwnedBy(xaviuzz, new ListSources(this.repository)),
 	);
 	private readonly adding = new JsonOperation(
-		new AddSource(this.repository, this.reader),
+		new OwnedBy(xaviuzz, new AddSource(this.repository, this.reader)),
 	);
 	private response = new Response();
 
@@ -89,6 +99,21 @@ class SUT {
 
 	operationName(): string {
 		return this.operation.name;
+	}
+
+	async addSourceAsAna(address: string, name: string): Promise<void> {
+		const payload = JSON.stringify({
+			header: { callId: "a-2" },
+			body: { address, name },
+		});
+		const request = new Request("http://x/sources.add", {
+			method: "POST",
+			body: payload,
+		});
+		const operation = new JsonOperation(
+			new OwnedBy(ana, new AddSource(this.repository, this.reader)),
+		);
+		this.response = await operation.serve(request);
 	}
 
 	async addSource(address: string, name: string): Promise<void> {

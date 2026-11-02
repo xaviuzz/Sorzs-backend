@@ -9,8 +9,13 @@ beforeEach(() => {
 	sut = new SUT();
 });
 
-test("seeds the user from the environment", async () => {
+test("seeds every user from the environment", async () => {
 	expect(await sut.acceptsLogin("xaviuzz", "p1casso")).toBe(true);
+	expect(await sut.acceptsLogin("ana", "pueblos")).toBe(true);
+});
+
+test("a password belongs to its own user", async () => {
+	expect(await sut.acceptsLogin("ana", "p1casso")).toBe(false);
 });
 
 test("signs with the secret from the environment", () => {
@@ -23,13 +28,26 @@ test("refuses to start without AUTH_SECRET", () => {
 	);
 });
 
-test("refuses to start without SEED_USER", () => {
-	expect(() => sut.startWithout("SEED_USER")).toThrow("SEED_USER is required");
+test("refuses to start without SEED_USERS", () => {
+	expect(() => sut.startWithout("SEED_USERS")).toThrow(
+		"SEED_USERS is required",
+	);
 });
 
-test("refuses to start with an empty SEED_PASSWORD", () => {
-	expect(() => sut.startWithEmpty("SEED_PASSWORD")).toThrow(
-		"SEED_PASSWORD is required",
+test("refuses to start with an empty SEED_USERS", () => {
+	expect(() => sut.startWithEmpty("SEED_USERS")).toThrow(
+		"SEED_USERS is required",
+	);
+});
+
+test.each([
+	["a pair with no password", "xaviuzz"],
+	["a pair with an empty password", "xaviuzz:"],
+	["a pair with an empty username", ":p1casso"],
+	["an empty pair between commas", "xaviuzz:p1casso,,ana:pueblos"],
+])("refuses to start with %s in SEED_USERS", (_title, users) => {
+	expect(() => sut.startWithUsers(users)).toThrow(
+		"SEED_USERS must be username:password pairs separated by commas",
 	);
 });
 
@@ -50,6 +68,11 @@ class SUT {
 
 	startWithout(setting: string): AuthSettings {
 		const environment = { ...authEnvironment(), [setting]: undefined };
+		return AuthSettings.fromEnv(environment);
+	}
+
+	startWithUsers(users: string): AuthSettings {
+		const environment = { ...authEnvironment(), SEED_USERS: users };
 		return AuthSettings.fromEnv(environment);
 	}
 

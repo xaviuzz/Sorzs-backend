@@ -26,6 +26,12 @@ test("refuses a token whose user was altered", () => {
 	expect(sut.recognizes(token)).toBe(false);
 });
 
+test("names the user a token was signed for", () => {
+	const token = sut.tokenFor("ana");
+
+	expect(sut.userOf(token)).toBe("ana");
+});
+
 test("refuses text that is not a token", () => {
 	expect(sut.recognizes("")).toBe(false);
 	expect(sut.recognizes("abc")).toBe(false);
@@ -48,6 +54,10 @@ class SUT {
 		const signature = this.tokenFor(name).split(".")[1];
 		const forgedUser = Buffer.from(forged).toString("base64url");
 		return `${forgedUser}.${signature}`;
+	}
+
+	userOf(raw: string): string {
+		return this.signer.userOf(raw).toString();
 	}
 
 	recognizes(raw: string): boolean {

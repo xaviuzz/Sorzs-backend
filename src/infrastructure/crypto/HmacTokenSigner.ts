@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { Token } from "../../domain/user/Token.ts";
 import type { TokenSigner } from "../../domain/user/TokenSigner.ts";
-import type { Username } from "../../domain/user/Username.ts";
+import { Username } from "../../domain/user/Username.ts";
 
 export class HmacTokenSigner implements TokenSigner {
 	constructor(private readonly secret: string) {}
@@ -20,6 +20,12 @@ export class HmacTokenSigner implements TokenSigner {
 		const given = Buffer.from(signature);
 		const sameLength = expected.length === given.length;
 		return sameLength && timingSafeEqual(expected, given);
+	}
+
+	userOf(raw: string): Username {
+		const [payload = ""] = raw.split(".");
+		const text = Buffer.from(payload, "base64url").toString();
+		return Username.from(text);
 	}
 
 	private signatureOf(payload: string): string {

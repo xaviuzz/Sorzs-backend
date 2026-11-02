@@ -1,3 +1,4 @@
+import { Database } from "bun:sqlite";
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import {
 	existsSync,
@@ -13,11 +14,14 @@ import { Source } from "../../../src/domain/source/Source.ts";
 import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
 import { SourceEntry } from "../../../src/domain/source-list/SourceEntry.ts";
 import { SourceName } from "../../../src/domain/source-list/SourceName.ts";
+import { Username } from "../../../src/domain/user/Username.ts";
 import { SqliteSourceListRepository } from "../../../src/infrastructure/sqlite/SqliteSourceListRepository.ts";
 import { UnreadableSourceListError } from "../../../src/infrastructure/sqlite/UnreadableSourceListError.ts";
 import { behavesAsSourceListRepository } from "../SourceListRepositoryBehavior.ts";
 
 behavesAsSourceListRepository(() => new SqliteSourceListRepository(":memory:"));
+
+const xaviuzz = Username.from("xaviuzz");
 
 let folder: string;
 
@@ -32,10 +36,10 @@ afterEach(() => {
 test("keeps the list when the file is opened again", async () => {
 	const path = join(folder, "sorzs.db");
 	const first = new SqliteSourceListRepository(path);
-	await first.add(entryFor("https://example.com", "Example"));
+	await first.add(xaviuzz, entryFor("https://example.com", "Example"));
 
 	const second = new SqliteSourceListRepository(path);
-	const list = await second.load();
+	const list = await second.load(xaviuzz);
 
 	expect(list.entries().map((entry) => entry.toJSON().name)).toEqual([
 		"Example",
@@ -45,15 +49,29 @@ test("keeps the list when the file is opened again", async () => {
 test("keeps the list in sorzs.db inside a folder it creates when missing", async () => {
 	const dataDir = join(folder, "nested", "data");
 	const first = SqliteSourceListRepository.inFolder(dataDir);
-	await first.add(entryFor("https://example.com", "Example"));
+	await first.add(xaviuzz, entryFor("https://example.com", "Example"));
 
 	const second = SqliteSourceListRepository.inFolder(dataDir);
-	const list = await second.load();
+	const list = await second.load(xaviuzz);
 
 	expect(list.entries().map((entry) => entry.toJSON().name)).toEqual([
 		"Example",
 	]);
 	expect(existsSync(join(dataDir, "sorzs.db"))).toBe(true);
+});
+
+test("entries saved before there were owners belong to xaviuzz", async () => {
+	const path = join(folder, "sorzs.db");
+	saveWithoutOwner(path, entryFor("https://example.com", "Example"));
+
+	const repository = new SqliteSourceListRepository(path);
+	const ofXaviuzz = await repository.load(xaviuzz);
+	const ofAna = await repository.load(Username.from("ana"));
+
+	expect(ofXaviuzz.entries().map((entry) => entry.toJSON().name)).toEqual([
+		"Example",
+	]);
+	expect(ofAna.entries()).toEqual([]);
 });
 
 test("a file that is not a database stops the opening and stays as it was", () => {
@@ -66,6 +84,17 @@ test("a file that is not a database stops the opening and stays as it was", () =
 	expect(opening).toThrow(UnreadableSourceListError);
 	expect(readFileSync(path)).toEqual(before);
 });
+
+function saveWithoutOwner(path: string, entry: SourceEntry): void {
+	const database = new Database(path);
+	database.run(
+		"CREATE TABLE entries (position INTEGER PRIMARY KEY AUTOINCREMENT, document TEXT NOT NULL)",
+	);
+	database.run("INSERT INTO entries (document) VALUES (?)", [
+		JSON.stringify(entry),
+	]);
+	database.close();
+}
 
 function entryFor(address: string, name: string): SourceEntry {
 	const source = Source.register(SourceAddress.from(address), PageInfo.none());

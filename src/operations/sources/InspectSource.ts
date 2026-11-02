@@ -3,9 +3,9 @@ import { CandidateAddresses } from "../../domain/source/CandidateAddresses.ts";
 import type { PageInfo } from "../../domain/source/PageInfo.ts";
 import type { PageReader } from "../../domain/source/PageReader.ts";
 import { SourceAddress } from "../../domain/source/SourceAddress.ts";
-import type { JsonHandler } from "../../infrastructure/transport/JsonTransport.ts";
+import type { OwnedHandler } from "../OwnedHandler.ts";
 
-export class InspectSource implements JsonHandler {
+export class InspectSource implements OwnedHandler {
 	readonly name = "sources.inspect";
 
 	constructor(private readonly reader: PageReader) {}

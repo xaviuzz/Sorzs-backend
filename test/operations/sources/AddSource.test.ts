@@ -4,8 +4,10 @@ import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
 import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
 import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
+import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSource } from "../../../src/operations/sources/AddSource.ts";
 import { FakePageReader } from "./FakePageReader.ts";
+import { ana, xaviuzz } from "./Owners.ts";
 
 let sut: SUT;
 
@@ -147,13 +149,22 @@ test("a refusal leaves the list unchanged", async () => {
 	expect(await sut.namesInList()).toEqual(["Example"]);
 });
 
+test("another user can add the same address and name", async () => {
+	await sut.add({ address: "https://example.com", name: "Example" });
+
+	await sut.addAsAna({ address: "https://example.com", name: "Example" });
+
+	const reply = await sut.reply();
+	expect(reply.header).toMatchObject({ status: "ok" });
+});
+
 type Reply = { header: Record<string, unknown>; body: unknown };
 
 class SUT {
 	private readonly repository = new InMemorySourceListRepository();
 	private readonly reader = new FakePageReader();
 	private readonly operation = new JsonOperation(
-		new AddSource(this.repository, this.reader),
+		new OwnedBy(xaviuzz, new AddSource(this.repository, this.reader)),
 	);
 	private response = new Response();
 
@@ -164,6 +175,18 @@ class SUT {
 			body: payload,
 		});
 		this.response = await this.operation.serve(request);
+	}
+
+	async addAsAna(body: unknown): Promise<void> {
+		const payload = JSON.stringify({ header: { callId: "a-2" }, body });
+		const request = new Request("http://x/sources.add", {
+			method: "POST",
+			body: payload,
+		});
+		const operation = new JsonOperation(
+			new OwnedBy(ana, new AddSource(this.repository, this.reader)),
+		);
+		this.response = await operation.serve(request);
 	}
 
 	pageOffers(address: string, title: string, favicon: string): void {
@@ -192,7 +215,7 @@ class SUT {
 	}
 
 	async namesInList(): Promise<(string | null)[]> {
-		const list = await this.repository.load();
+		const list = await this.repository.load(xaviuzz);
 		return list.entries().map((entry) => entry.toJSON().name);
 	}
 }

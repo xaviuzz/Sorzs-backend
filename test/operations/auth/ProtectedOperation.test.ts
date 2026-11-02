@@ -1,8 +1,9 @@
 import { beforeEach, expect, test } from "bun:test";
+import type { Call } from "../../../src/call/Call.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { HmacTokenSigner } from "../../../src/infrastructure/crypto/HmacTokenSigner.ts";
 import { ProtectedOperation } from "../../../src/operations/auth/ProtectedOperation.ts";
-import type { Operation } from "../../../src/operations/Operation.ts";
+import type { OwnedHandler } from "../../../src/operations/OwnedHandler.ts";
 
 let sut: SUT;
 
@@ -18,7 +19,19 @@ test("serves a request with a valid token", async () => {
 	await sut.sendWithToken(sut.validToken());
 
 	expect(sut.status()).toBe(200);
-	expect(await sut.text()).toBe("reached");
+	expect(await sut.reply()).toMatchObject({ body: { reached: true } });
+});
+
+test("hands the handler the user the token names", async () => {
+	await sut.sendWithToken(sut.tokenOf("ana"));
+
+	expect(sut.ownersServed()).toEqual(["ana"]);
+});
+
+test("serves nobody when the token is refused", async () => {
+	await sut.sendWithToken(`${sut.tokenOf("ana")}x`);
+
+	expect(sut.ownersServed()).toEqual([]);
 });
 
 test("answers 403 FORBIDDEN without a token", async () => {
@@ -57,8 +70,9 @@ test("answers 403 before reading a call that is not JSON", async () => {
 
 class SUT {
 	private readonly signer = new HmacTokenSigner("secret");
+	private readonly handler = new ReachedHandler();
 	private readonly operation = new ProtectedOperation(
-		new ReachedOperation(),
+		this.handler,
 		this.signer,
 	);
 	private response = new Response();
@@ -68,7 +82,15 @@ class SUT {
 	}
 
 	validToken(): string {
-		return this.signer.sign(Username.from("xaviuzz")).toString();
+		return this.tokenOf("xaviuzz");
+	}
+
+	tokenOf(name: string): string {
+		return this.signer.sign(Username.from(name)).toString();
+	}
+
+	ownersServed(): string[] {
+		return this.handler.owners();
 	}
 
 	async sendWithToken(token: string): Promise<void> {
@@ -76,11 +98,11 @@ class SUT {
 	}
 
 	async sendWithHeader(authorization: string): Promise<void> {
-		await this.send({ authorization }, "{}");
+		await this.send({ authorization }, this.validCall());
 	}
 
 	async sendWithoutToken(): Promise<void> {
-		await this.send({}, "{}");
+		await this.send({}, this.validCall());
 	}
 
 	async sendUnreadableWithoutToken(): Promise<void> {
@@ -91,14 +113,18 @@ class SUT {
 		return this.response.status;
 	}
 
-	async text(): Promise<string> {
-		const text = await this.response.text();
-		return text;
+	async reply(): Promise<unknown> {
+		const reply = await this.response.json();
+		return reply;
 	}
 
 	async json(): Promise<unknown> {
 		const json = await this.response.json();
 		return json;
+	}
+
+	private validCall(): string {
+		return JSON.stringify({ header: { callId: "p-1" } });
 	}
 
 	private async send(headers: HeadersInit, body: string): Promise<void> {
@@ -111,10 +137,16 @@ class SUT {
 	}
 }
 
-class ReachedOperation implements Operation {
+class ReachedHandler implements OwnedHandler {
 	readonly name = "sources.list";
+	private readonly served: string[] = [];
 
-	async serve(): Promise<Response> {
-		return new Response("reached");
+	async execute(_call: Call, owner: Username): Promise<unknown> {
+		this.served.push(owner.toString());
+		return { reached: true };
+	}
+
+	owners(): string[] {
+		return [...this.served];
 	}
 }

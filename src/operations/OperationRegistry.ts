@@ -1,7 +1,6 @@
 import { GoogleLinkSearch } from "../infrastructure/google/GoogleLinkSearch.ts";
 import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
 import { SqliteSourceListRepository } from "../infrastructure/sqlite/SqliteSourceListRepository.ts";
-import type { JsonHandler } from "../infrastructure/transport/JsonTransport.ts";
 import type { Routes } from "../Routes.ts";
 import { AuthLogin } from "./auth/AuthLogin.ts";
 import type { AuthSettings } from "./auth/AuthSettings.ts";
@@ -9,6 +8,7 @@ import { ProtectedOperation } from "./auth/ProtectedOperation.ts";
 import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";
 import type { Operation } from "./Operation.ts";
+import type { OwnedHandler } from "./OwnedHandler.ts";
 import { AddSource } from "./sources/AddSource.ts";
 import { InspectSource } from "./sources/InspectSource.ts";
 import { ListSources } from "./sources/ListSources.ts";
@@ -27,8 +27,8 @@ export class OperationRegistry {
 		const repository = SqliteSourceListRepository.inFolder(dataDir);
 		const reader = new HttpPageReader();
 		const signer = auth.signer();
-		const protectedBy = (handler: JsonHandler) =>
-			new ProtectedOperation(new JsonOperation(handler), signer);
+		const protectedBy = (handler: OwnedHandler) =>
+			new ProtectedOperation(handler, signer);
 		return new OperationRegistry([
 			new JsonOperation(new HealthCheck()),
 			new JsonOperation(new AuthLogin(auth.users(), signer)),

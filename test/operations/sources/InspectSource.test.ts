@@ -4,9 +4,11 @@ import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
 import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
 import { InMemorySourceListRepository } from "../../../src/infrastructure/memory/InMemorySourceListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
+import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { InspectSource } from "../../../src/operations/sources/InspectSource.ts";
 import { ListSources } from "../../../src/operations/sources/ListSources.ts";
 import { FakePageReader } from "./FakePageReader.ts";
+import { xaviuzz } from "./Owners.ts";
 
 let sut: SUT;
 
@@ -135,10 +137,10 @@ class SUT {
 	private readonly repository = new InMemorySourceListRepository();
 	private readonly reader = new FakePageReader();
 	private readonly operation = new JsonOperation(
-		new InspectSource(this.reader),
+		new OwnedBy(xaviuzz, new InspectSource(this.reader)),
 	);
 	private readonly listing = new JsonOperation(
-		new ListSources(this.repository),
+		new OwnedBy(xaviuzz, new ListSources(this.repository)),
 	);
 	private response = new Response();
 

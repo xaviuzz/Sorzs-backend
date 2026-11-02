@@ -38,6 +38,16 @@ test("a source added over HTTP shows in the list", async () => {
 	});
 });
 
+test("each user lists only their own sources over HTTP", async () => {
+	await sut.logInAs("e-6", "xaviuzz", "p1casso");
+	await sut.addSource("e-7", "https://xaviuzz.example.com", "Mine");
+	await sut.logInAs("e-8", "ana", "pueblos");
+
+	await sut.listSources("e-9");
+
+	expect(await sut.reply()).toMatchObject({ body: { sources: [] } });
+});
+
 test("a protected route answers 403 without a token", async () => {
 	await sut.listSourcesWithoutToken("e-4");
 
@@ -80,7 +90,15 @@ class SUT {
 	private token = "";
 
 	async logIn(callId: string): Promise<void> {
-		await this.logInWith(callId, "xaviuzz", "p1casso");
+		await this.logInAs(callId, "xaviuzz", "p1casso");
+	}
+
+	async logInAs(
+		callId: string,
+		username: string,
+		password: string,
+	): Promise<void> {
+		await this.logInWith(callId, username, password);
 		const reply = (await this.response.json()) as {
 			body: { token?: string };
 		};

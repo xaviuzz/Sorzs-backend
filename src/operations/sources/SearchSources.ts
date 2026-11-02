@@ -5,9 +5,10 @@ import { SearchResults } from "../../domain/search/SearchResults.ts";
 import type { SourceSearch } from "../../domain/search/SourceSearch.ts";
 import type { SourceEntry } from "../../domain/source-list/SourceEntry.ts";
 import type { SourceListRepository } from "../../domain/source-list/SourceListRepository.ts";
-import type { JsonHandler } from "../../infrastructure/transport/JsonTransport.ts";
+import type { Username } from "../../domain/user/Username.ts";
+import type { OwnedHandler } from "../OwnedHandler.ts";
 
-export class SearchSources implements JsonHandler {
+export class SearchSources implements OwnedHandler {
 	readonly name = "sources.search";
 
 	constructor(
@@ -15,9 +16,9 @@ export class SearchSources implements JsonHandler {
 		private readonly search: SourceSearch,
 	) {}
 
-	async execute(call: Call): Promise<unknown> {
+	async execute(call: Call, owner: Username): Promise<unknown> {
 		const query = SearchQuery.from(call.body.requireText("query"));
-		const list = await this.repository.load();
+		const list = await this.repository.load(owner);
 		const answers = await this.searchAll(list.entries(), query);
 		const results = this.merge(answers);
 		return { results: results.toJSON() };

@@ -8,6 +8,7 @@ import { SourceEntry } from "../../src/domain/source-list/SourceEntry.ts";
 import { SourceList } from "../../src/domain/source-list/SourceList.ts";
 import type { SourceListRepository } from "../../src/domain/source-list/SourceListRepository.ts";
 import { SourceName } from "../../src/domain/source-list/SourceName.ts";
+import { Username } from "../../src/domain/user/Username.ts";
 
 export function behavesAsSourceListRepository(
 	create: () => SourceListRepository,
@@ -59,6 +60,34 @@ export function behavesAsSourceListRepository(
 		expect(adding).toThrow(NameTakenError);
 	});
 
+	test("each user has a list of their own", async () => {
+		await sut.addEntry("https://example.com", "Example");
+
+		await sut.loadListOf("ana");
+
+		expect(sut.names()).toEqual([]);
+	});
+
+	test("entries stay in the order they were added within each user's list", async () => {
+		await sut.addEntry("https://a.example.com", "First of xaviuzz");
+		await sut.addEntryOf("ana", "https://b.example.com", "First of ana");
+		await sut.addEntry("https://c.example.com", "Second of xaviuzz");
+		await sut.addEntryOf("ana", "https://d.example.com", "Second of ana");
+
+		await sut.loadListOf("ana");
+
+		expect(sut.names()).toEqual(["First of ana", "Second of ana"]);
+	});
+
+	test("the same address can be in two users' lists", async () => {
+		await sut.addEntry("https://example.com", "Example");
+		await sut.loadListOf("ana");
+
+		const adding = sut.addToLoaded("https://example.com", "Example");
+
+		expect(adding).not.toThrow();
+	});
+
 	test("adding to a loaded list does not change what is kept", async () => {
 		await sut.loadList();
 		sut.addToLoaded("https://example.com", "Example")();
@@ -75,12 +104,24 @@ class SUT {
 	constructor(private readonly repository: SourceListRepository) {}
 
 	async loadList(): Promise<void> {
-		this.loaded = await this.repository.load();
+		await this.loadListOf("xaviuzz");
+	}
+
+	async loadListOf(owner: string): Promise<void> {
+		this.loaded = await this.repository.load(Username.from(owner));
 	}
 
 	async addEntry(address: string, name: string): Promise<void> {
+		await this.addEntryOf("xaviuzz", address, name);
+	}
+
+	async addEntryOf(
+		owner: string,
+		address: string,
+		name: string,
+	): Promise<void> {
 		const entry = this.entryFor(address, name);
-		await this.repository.add(entry);
+		await this.repository.add(Username.from(owner), entry);
 	}
 
 	addToLoaded(address: string, name: string): () => void {
