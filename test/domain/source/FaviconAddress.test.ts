@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { FaviconAddress } from "../../../src/domain/source/FaviconAddress.ts";
+import { WebAddress } from "../../../src/domain/source/WebAddress.ts";
 
 test("keeps an https address", () => {
 	const favicon = FaviconAddress.from("https://example.com/icon.png");
@@ -33,6 +34,20 @@ test("drops text that is not an address", () => {
 
 test("no favicon is missing", () => {
 	const favicon = FaviconAddress.none();
+
+	expect(favicon.toJSON()).toBeNull();
+});
+
+test("keeps a web address that is valid", () => {
+	const favicon = FaviconAddress.of(
+		new WebAddress("https://example.com/icon.png"),
+	);
+
+	expect(favicon.toJSON()).toBe("https://example.com/icon.png");
+});
+
+test("drops a web address that is not valid", () => {
+	const favicon = FaviconAddress.of(new WebAddress(""));
 
 	expect(favicon.toJSON()).toBeNull();
 });

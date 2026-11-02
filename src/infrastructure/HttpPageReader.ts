@@ -49,7 +49,7 @@ export class HttpPageReader implements PageReader {
 	): Promise<FaviconAddress> {
 		let favicon = FaviconAddress.none();
 		if (head.declaresIcon())
-			favicon = FaviconAddress.from(head.iconAddressFrom(page).toString());
+			favicon = FaviconAddress.of(head.iconAddressFrom(page));
 		else favicon = await this.findFaviconAtRoot(page, signal);
 		return favicon;
 	}
@@ -61,7 +61,7 @@ export class HttpPageReader implements PageReader {
 		const atRoot = page.resolve("/favicon.ico");
 		const answers = await this.answers(atRoot, signal);
 		let favicon = FaviconAddress.none();
-		if (answers) favicon = FaviconAddress.from(atRoot.toString());
+		if (answers) favicon = FaviconAddress.of(atRoot);
 		return favicon;
 	}
 

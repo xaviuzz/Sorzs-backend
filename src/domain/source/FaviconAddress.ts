@@ -1,23 +1,26 @@
 import { WebAddress } from "./WebAddress.ts";
 
 export class FaviconAddress {
-	private constructor(private readonly text: string) {}
+	private constructor(private readonly web: WebAddress) {}
 
 	static from(raw: string): FaviconAddress {
-		const text = raw.trim();
+		const web = new WebAddress(raw.trim());
+		return FaviconAddress.of(web);
+	}
+
+	static of(web: WebAddress): FaviconAddress {
 		let favicon = FaviconAddress.none();
-		const isWebAddress = new WebAddress(text).isValid();
-		if (isWebAddress) favicon = new FaviconAddress(text);
+		if (web.isValid()) favicon = new FaviconAddress(web);
 		return favicon;
 	}
 
 	static none(): FaviconAddress {
-		return new FaviconAddress("");
+		return new FaviconAddress(new WebAddress(""));
 	}
 
 	toJSON(): string | null {
 		let json: string | null = null;
-		if (this.text.length > 0) json = this.text;
+		if (this.web.isValid()) json = this.web.toString();
 		return json;
 	}
 }
