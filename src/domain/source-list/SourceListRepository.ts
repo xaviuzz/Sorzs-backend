@@ -1,6 +1,7 @@
+import type { SourceEntry } from "./SourceEntry.ts";
 import type { SourceList } from "./SourceList.ts";
 
 export interface SourceListRepository {
 	load(): Promise<SourceList>;
-	save(list: SourceList): Promise<void>;
+	add(entry: SourceEntry): Promise<void>;
 }

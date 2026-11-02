@@ -5,7 +5,11 @@ import { SourceEntry } from "./SourceEntry.ts";
 import type { SourceName } from "./SourceName.ts";
 
 export class SourceList {
-	private readonly held: SourceEntry[] = [];
+	private readonly held: SourceEntry[];
+
+	constructor(entries: SourceEntry[] = []) {
+		this.held = [...entries];
+	}
 
 	add(source: Source, name: SourceName): SourceEntry {
 		this.refuseRepeatedAddress(source);

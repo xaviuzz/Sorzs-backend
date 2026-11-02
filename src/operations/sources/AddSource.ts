@@ -20,7 +20,7 @@ export class AddSource implements JsonHandler {
 		const info = await this.reader.read(address);
 		const list = await this.repository.load();
 		const entry = list.add(Source.register(address, info), name);
-		await this.repository.save(list);
+		await this.repository.add(entry);
 		return entry.toJSON();
 	}
 }
