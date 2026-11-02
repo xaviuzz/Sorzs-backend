@@ -30,6 +30,13 @@ export class SourceAddress {
 		return this.text === other.text;
 	}
 
+	site(): string {
+		const { host, pathname } = new URL(this.text);
+		const path = pathname.replace(/\/$/, "");
+		const site = `${host}${path}`;
+		return site;
+	}
+
 	toString(): string {
 		return this.text;
 	}

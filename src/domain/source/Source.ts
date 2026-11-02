@@ -24,6 +24,16 @@ export class Source {
 		return this.address.equals(other.address);
 	}
 
+	label(): string {
+		const address = this.address.toString();
+		const label = this.pageInfo.titleOr(address);
+		return label;
+	}
+
+	site(): string {
+		return this.address.site();
+	}
+
 	toJSON(): SourceJson {
 		const sourceId = this.id.toString();
 		const address = this.address.toString();

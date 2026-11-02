@@ -18,6 +18,12 @@ export class PageTitle {
 		return isPresent;
 	}
 
+	orElse(fallback: string): string {
+		let text = fallback;
+		if (this.isPresent()) text = this.text;
+		return text;
+	}
+
 	toJSON(): string | null {
 		let json: string | null = null;
 		if (this.text.length > 0) json = this.text;

@@ -35,7 +35,7 @@ test("answers one result per source with the name the list shows", async () => {
 		results: [
 			{
 				title: "title",
-				url: "link:https://a.com",
+				url: "link:a.com",
 				description: "bun",
 				source: "Alpha",
 			},
@@ -47,7 +47,7 @@ test("answers in list order even when an earlier source answers last", async () 
 	await sut.addSource("https://a.com", "Alpha");
 	await sut.addSource("https://b.com", "Beta");
 	await sut.addSource("https://c.com", "Gamma");
-	sut.isSlowFor("https://a.com");
+	sut.isSlowFor("a.com");
 
 	await sut.search({ query: "bun" });
 
@@ -113,8 +113,8 @@ class SUT {
 		return this.operation.name;
 	}
 
-	isSlowFor(address: string): void {
-		this.searching.isSlowFor(address);
+	isSlowFor(site: string): void {
+		this.searching.isSlowFor(site);
 	}
 
 	answersOnlyWhenTogether(count: number): void {

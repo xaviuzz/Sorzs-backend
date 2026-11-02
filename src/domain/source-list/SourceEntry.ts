@@ -24,12 +24,13 @@ export class SourceEntry {
 	}
 
 	displayName(): string {
-		const { address, title } = this.source.toJSON();
-		const name = this.name.toJSON();
-		let displayName = address;
-		if (title) displayName = title;
-		if (name) displayName = name;
+		const label = this.source.label();
+		const displayName = this.name.orElse(label);
 		return displayName;
+	}
+
+	site(): string {
+		return this.source.site();
 	}
 
 	toJSON(): EntryJson {

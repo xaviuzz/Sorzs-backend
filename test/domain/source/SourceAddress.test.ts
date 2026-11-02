@@ -58,3 +58,15 @@ test("its refusal carries the invalid body code", () => {
 
 	expect(refusal.code).toBe("INVALID_BODY");
 });
+
+test("names the site as host and path", () => {
+	const address = SourceAddress.from("https://example.com/docs");
+
+	expect(address.site()).toBe("example.com/docs");
+});
+
+test("names the site without the closing slash", () => {
+	const address = SourceAddress.from("https://example.com/");
+
+	expect(address.site()).toBe("example.com");
+});

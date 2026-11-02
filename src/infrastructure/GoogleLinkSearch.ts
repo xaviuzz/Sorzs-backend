@@ -8,20 +8,12 @@ const GOOGLE_SEARCH = "https://www.google.com/search";
 
 export class GoogleLinkSearch implements SourceSearch {
 	async search(entry: SourceEntry, query: SearchQuery): Promise<SearchResult> {
-		const site = this.siteOf(entry);
+		const site = entry.site();
 		const text = query.toString();
 		const url = this.linkFor(text, site);
 		const description = `Google search for «${text}» limited to ${site}`;
 		const source = entry.displayName();
 		return new SearchResult(TITLE, url, description, source);
-	}
-
-	private siteOf(entry: SourceEntry): string {
-		const { address } = entry.toJSON();
-		const { host, pathname } = new URL(address);
-		const path = pathname.replace(/\/$/, "");
-		const site = `${host}${path}`;
-		return site;
 	}
 
 	private linkFor(text: string, site: string): string {

@@ -5,15 +5,15 @@ import type { SourceEntry } from "../../../src/domain/source-list/SourceEntry.ts
 
 export class FakeSourceSearch implements SourceSearch {
 	private readonly queries: string[] = [];
-	private readonly slowAddresses = new Set<string>();
+	private readonly slowSites = new Set<string>();
 	private expectedTogether = 1;
 	private release: () => void = () => {};
 	private readonly allStarted = new Promise<void>((resolve) => {
 		this.release = resolve;
 	});
 
-	isSlowFor(address: string): void {
-		this.slowAddresses.add(address);
+	isSlowFor(site: string): void {
+		this.slowSites.add(site);
 	}
 
 	answersOnlyWhenTogether(count: number): void {
@@ -24,11 +24,11 @@ export class FakeSourceSearch implements SourceSearch {
 		this.queries.push(query.toString());
 		if (this.queries.length >= this.expectedTogether) this.release();
 		await this.allStarted;
-		const { address } = entry.toJSON();
-		if (this.slowAddresses.has(address)) await Bun.sleep(20);
+		const site = entry.site();
+		if (this.slowSites.has(site)) await Bun.sleep(20);
 		const result = new SearchResult(
 			"title",
-			`link:${address}`,
+			`link:${site}`,
 			query.toString(),
 			entry.displayName(),
 		);

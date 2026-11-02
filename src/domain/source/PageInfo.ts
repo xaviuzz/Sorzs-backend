@@ -16,6 +16,10 @@ export class PageInfo {
 		return this.title.isPresent();
 	}
 
+	titleOr(fallback: string): string {
+		return this.title.orElse(fallback);
+	}
+
 	toCandidateJSON(address: SourceAddress): {
 		address: string;
 		title: string | null;

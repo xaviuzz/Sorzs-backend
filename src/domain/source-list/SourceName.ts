@@ -41,6 +41,12 @@ export class SourceName {
 		return isSameName;
 	}
 
+	orElse(fallback: string): string {
+		let text = fallback;
+		if (this.isGiven()) text = this.text;
+		return text;
+	}
+
 	toJSON(): string | null {
 		let json: string | null = null;
 		if (this.isGiven()) json = this.text;
