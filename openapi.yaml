@@ -22,6 +22,25 @@ paths:
                 $ref: "#/components/schemas/HealthCheckReply"
         "400":
           $ref: "#/components/responses/TransportError"
+  /auth.login:
+    post:
+      operationId: authLogin
+      summary: Exchanges a username and password for a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginCall"
+      responses:
+        "200":
+          description: the token, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthLoginReply"
+        "400":
+          $ref: "#/components/responses/TransportError"
   /sources.add:
     post:
       operationId: sourcesAdd
@@ -41,6 +60,8 @@ paths:
                 $ref: "#/components/schemas/SourcesAddReply"
         "400":
           $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /sources.inspect:
     post:
       operationId: sourcesInspect
@@ -60,6 +81,8 @@ paths:
                 $ref: "#/components/schemas/SourcesInspectReply"
         "400":
           $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /sources.list:
     post:
       operationId: sourcesList
@@ -79,6 +102,8 @@ paths:
                 $ref: "#/components/schemas/SourcesListReply"
         "400":
           $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
   /sources.search:
     post:
       operationId: sourcesSearch
@@ -98,10 +123,18 @@ paths:
                 $ref: "#/components/schemas/SourcesSearchReply"
         "400":
           $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   responses:
     TransportError:
       description: unreadable JSON or missing callId
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorBody"
+    Forbidden:
+      description: missing, malformed or altered token
       content:
         application/json:
           schema:
@@ -139,6 +172,8 @@ components:
           type: string
           enum:
             - INVALID_BODY
+            - INVALID_CREDENTIALS
+            - FORBIDDEN
             - SOURCE_ALREADY_REGISTERED
             - SOURCE_NAME_TAKEN
             - INTERNAL_ERROR
@@ -160,6 +195,36 @@ components:
         body:
           oneOf:
             - $ref: "#/components/schemas/HealthCheckBody"
+            - $ref: "#/components/schemas/ErrorBody"
+    AuthLoginCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [username, password]
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    AuthLoginBody:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    AuthLoginReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/AuthLoginBody"
             - $ref: "#/components/schemas/ErrorBody"
     SourceEntry:
       type: object
