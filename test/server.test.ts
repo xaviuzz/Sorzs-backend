@@ -2,7 +2,9 @@ import { afterAll, beforeAll, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { Server } from "../src/server.ts";
+import { authEnvironment } from "./AuthEnvironment.ts";
 
 let sut: SUT;
 
@@ -23,6 +25,7 @@ test("POST /health.check answers 200 ok end to end", async () => {
 });
 
 test("a source added over HTTP shows in the list", async () => {
+	await sut.logIn("e-0");
 	await sut.addSource("e-2", "https://example.com", "Example");
 
 	await sut.listSources("e-3");
@@ -32,6 +35,25 @@ test("a source added over HTTP shows in the list", async () => {
 		body: {
 			sources: [{ name: "Example", address: "https://example.com" }],
 		},
+	});
+});
+
+test("a protected route answers 403 without a token", async () => {
+	await sut.listSourcesWithoutToken("e-4");
+
+	expect(sut.status()).toBe(403);
+	expect(await sut.reply()).toEqual({
+		code: "FORBIDDEN",
+		message: "forbidden",
+	});
+});
+
+test("wrong credentials answer INVALID_CREDENTIALS over HTTP", async () => {
+	await sut.logInWith("e-5", "xaviuzz", "dali");
+
+	expect(await sut.reply()).toMatchObject({
+		header: { callId: "e-5", status: "error" },
+		body: { code: "INVALID_CREDENTIALS" },
 	});
 });
 
@@ -49,8 +71,41 @@ test("a GET to an operation URL answers 404", async () => {
 
 class SUT {
 	private readonly dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
-	private readonly server = Server.start(0, this.dataDir);
+	private readonly server = Server.start(
+		0,
+		this.dataDir,
+		AuthSettings.fromEnv(authEnvironment()),
+	);
 	private response = new Response();
+	private token = "";
+
+	async logIn(callId: string): Promise<void> {
+		await this.logInWith(callId, "xaviuzz", "p1casso");
+		const reply = (await this.response.json()) as {
+			body: { token?: string };
+		};
+		this.token = reply.body.token ?? "";
+	}
+
+	async logInWith(
+		callId: string,
+		username: string,
+		password: string,
+	): Promise<void> {
+		const payload = JSON.stringify({
+			header: { callId },
+			body: { username, password },
+		});
+		await this.post("auth.login", payload);
+	}
+
+	async listSourcesWithoutToken(callId: string): Promise<void> {
+		const payload = JSON.stringify({ header: { callId } });
+		this.response = await fetch(`${this.server.url}sources.list`, {
+			method: "POST",
+			body: payload,
+		});
+	}
 
 	async callHealthCheck(callId: string): Promise<void> {
 		const payload = JSON.stringify({ header: { callId } });
@@ -99,6 +154,7 @@ class SUT {
 	private async post(path: string, payload: string): Promise<void> {
 		this.response = await fetch(`${this.server.url}${path}`, {
 			method: "POST",
+			headers: { authorization: `Bearer ${this.token}` },
 			body: payload,
 		});
 	}

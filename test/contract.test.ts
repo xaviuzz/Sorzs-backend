@@ -2,7 +2,9 @@ import { beforeAll, expect, test } from "bun:test";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "../src/operations/OperationRegistry.ts";
+import { authEnvironment } from "./AuthEnvironment.ts";
 import { OpenApiRoutes } from "./OpenApiRoutes.ts";
 
 let sut: SUT;
@@ -27,7 +29,10 @@ class SUT {
 	static async read(): Promise<SUT> {
 		const contract = await OpenApiRoutes.read("openapi.yaml");
 		const dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
-		const registered = OperationRegistry.standard(dataDir).names();
+		const registered = OperationRegistry.standard(
+			dataDir,
+			AuthSettings.fromEnv(authEnvironment()),
+		).names();
 		return new SUT(contract.names, registered);
 	}
 

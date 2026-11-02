@@ -1,10 +1,11 @@
+import type { AuthSettings } from "./operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "./operations/OperationRegistry.ts";
 
 export class Server {
 	private constructor(private readonly bunServer: Bun.Server<undefined>) {}
 
-	static start(port: number, dataDir: string): Server {
-		const operations = OperationRegistry.standard(dataDir);
+	static start(port: number, dataDir: string, auth: AuthSettings): Server {
+		const operations = OperationRegistry.standard(dataDir, auth);
 		const bunServer = Bun.serve({
 			port,
 			routes: operations.routes(),

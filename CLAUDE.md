@@ -17,6 +17,8 @@ A change is done when test, lint, typecheck and build pass.
 
 The list lives in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. A file that cannot be read stops the start. Tests that start a server or the registry pass a temporary folder.
 
+The server refuses to start without `AUTH_SECRET` (signs tokens), `SEED_USER` and `SEED_PASSWORD` (the one user). Development and e2e use `xaviuzz` and `p1casso`; tests take them from `test/AuthEnvironment.ts`.
+
 ## Stack
 
 `Bun.serve` and `bun test`, no framework, no validation library. Biome and TypeScript are the only dev dependencies. Add nothing else without asking.
