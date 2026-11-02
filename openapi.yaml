@@ -212,10 +212,13 @@ components:
               type: string
     AuthLoginBody:
       type: object
-      required: [token]
+      required: [token, role]
       properties:
         token:
           type: string
+        role:
+          type: string
+          enum: [admin, user]
     AuthLoginReply:
       type: object
       required: [header, body]
