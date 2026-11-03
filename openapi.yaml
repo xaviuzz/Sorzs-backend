@@ -188,6 +188,27 @@ paths:
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /sorzs.sources:
+    post:
+      operationId: sorzsSources
+      summary: Lists every source held by at least one user's list, with how many users hold it, for an admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallWithoutBody"
+      responses:
+        "200":
+          description: the sources ordered by address, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SorzsSourcesReply"
+        "400":
+          $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   responses:
     TransportError:
@@ -441,6 +462,35 @@ components:
         body:
           oneOf:
             - $ref: "#/components/schemas/SourcesSearchBody"
+            - $ref: "#/components/schemas/ErrorBody"
+    SorzsSourceEntry:
+      type: object
+      required: [address, favicon, users]
+      properties:
+        address:
+          type: string
+        favicon:
+          type: string
+          nullable: true
+        users:
+          type: integer
+    SorzsSourcesBody:
+      type: object
+      required: [sources]
+      properties:
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/SorzsSourceEntry"
+    SorzsSourcesReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/SorzsSourcesBody"
             - $ref: "#/components/schemas/ErrorBody"
     UserEntry:
       type: object
