@@ -14,11 +14,35 @@ export class RegisteredUser implements User {
 		return this.name.equals(name);
 	}
 
+	sharesNameWith(other: RegisteredUser): boolean {
+		return other.isNamed(this.name);
+	}
+
 	accepts(plain: string): Promise<boolean> {
 		return this.password.matches(plain);
 	}
 
 	role(): Role {
 		return this.assigned;
+	}
+
+	isAdmin(): boolean {
+		return this.assigned.isAdmin();
+	}
+
+	withRole(role: Role): RegisteredUser {
+		return new RegisteredUser(this.name, this.password, role);
+	}
+
+	toJSON(): { username: string; role: string } {
+		return { username: this.name.toString(), role: this.assigned.toString() };
+	}
+
+	toRecord(): { username: string; hash: string; role: string } {
+		return {
+			username: this.name.toString(),
+			hash: this.password.toString(),
+			role: this.assigned.toString(),
+		};
 	}
 }

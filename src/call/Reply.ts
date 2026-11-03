@@ -4,6 +4,8 @@ export type ErrorCode =
 	| "FORBIDDEN"
 	| "SOURCE_ALREADY_REGISTERED"
 	| "SOURCE_NAME_TAKEN"
+	| "USERNAME_TAKEN"
+	| "LAST_ADMIN"
 	| "INTERNAL_ERROR";
 
 type Status = "ok" | "error";

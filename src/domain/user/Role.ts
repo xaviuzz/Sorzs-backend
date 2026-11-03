@@ -1,3 +1,5 @@
+import { InvalidRoleError } from "./InvalidRoleError.ts";
+
 export class Role {
 	private constructor(private readonly text: string) {}
 
@@ -14,8 +16,17 @@ export class Role {
 		return known.some((role) => role.text === text);
 	}
 
+	static from(text: string): Role {
+		if (!Role.isKnown(text)) throw new InvalidRoleError();
+		return new Role(text);
+	}
+
 	static named(text: string): Role {
 		return new Role(text);
+	}
+
+	isAdmin(): boolean {
+		return this.text === Role.admin().text;
 	}
 
 	toString(): string {
