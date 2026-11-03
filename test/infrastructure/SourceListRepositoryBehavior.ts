@@ -88,6 +88,25 @@ export function behavesAsSourceListRepository(
 		expect(adding).not.toThrow();
 	});
 
+	test("hands over no list when nothing was added", async () => {
+		await sut.loadEveryList();
+
+		expect(sut.namesOfEveryList()).toEqual([]);
+	});
+
+	test("hands over the list of every owner", async () => {
+		await sut.addEntry("https://a.example.com", "First of xaviuzz");
+		await sut.addEntryOf("ana", "https://b.example.com", "First of ana");
+		await sut.addEntry("https://c.example.com", "Second of xaviuzz");
+
+		await sut.loadEveryList();
+
+		expect(sut.namesOfEveryList()).toEqual([
+			["First of ana"],
+			["First of xaviuzz", "Second of xaviuzz"],
+		]);
+	});
+
 	test("adding to a loaded list does not change what is kept", async () => {
 		await sut.loadList();
 		sut.addToLoaded("https://example.com", "Example")();
@@ -100,8 +119,25 @@ export function behavesAsSourceListRepository(
 
 class SUT {
 	private loaded = new SourceList();
+	private everyList: SourceList[] = [];
 
 	constructor(private readonly repository: SourceListRepository) {}
+
+	async loadEveryList(): Promise<void> {
+		this.everyList = await this.repository.loadEveryList();
+	}
+
+	namesOfEveryList(): (string | null)[][] {
+		const namesOfEach: (string | null)[][] = [];
+		for (const list of this.everyList) {
+			const names = list.entries().map((entry) => entry.toJSON().name);
+			namesOfEach.push(names);
+		}
+		const sorted = namesOfEach.sort((one, other) =>
+			String(one[0]).localeCompare(String(other[0])),
+		);
+		return sorted;
+	}
 
 	async loadList(): Promise<void> {
 		await this.loadListOf("xaviuzz");

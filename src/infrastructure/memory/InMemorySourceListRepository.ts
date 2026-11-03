@@ -11,6 +11,14 @@ export class InMemorySourceListRepository implements SourceListRepository {
 		return list;
 	}
 
+	async loadEveryList(): Promise<SourceList[]> {
+		const lists: SourceList[] = [];
+		for (const held of this.heldByOwner.values()) {
+			lists.push(new SourceList(held));
+		}
+		return lists;
+	}
+
 	async add(owner: Username, entry: SourceEntry): Promise<void> {
 		const held = this.heldBy(owner);
 		held.push(entry);

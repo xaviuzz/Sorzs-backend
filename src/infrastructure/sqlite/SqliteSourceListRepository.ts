@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { SourceEntry } from "../../domain/source-list/SourceEntry.ts";
 import { SourceList } from "../../domain/source-list/SourceList.ts";
 import type { SourceListRepository } from "../../domain/source-list/SourceListRepository.ts";
-import type { Username } from "../../domain/user/Username.ts";
+import { Username } from "../../domain/user/Username.ts";
 import { UnreadableSourceListError } from "./UnreadableSourceListError.ts";
 
 export class SqliteSourceListRepository implements SourceListRepository {
@@ -52,6 +52,22 @@ export class SqliteSourceListRepository implements SourceListRepository {
 			"SELECT document FROM entries WHERE owner = ? ORDER BY position",
 		);
 		const rows = query.all(owner.toString()) as { document: string }[];
+		const list = SqliteSourceListRepository.listOf(rows);
+		return list;
+	}
+
+	async loadEveryList(): Promise<SourceList[]> {
+		const owners = this.database
+			.query("SELECT DISTINCT owner FROM entries ORDER BY owner")
+			.all() as { owner: string }[];
+		const lists: SourceList[] = [];
+		for (const { owner } of owners) {
+			lists.push(await this.load(Username.from(owner)));
+		}
+		return lists;
+	}
+
+	private static listOf(rows: { document: string }[]): SourceList {
 		const entries: SourceEntry[] = [];
 		for (const row of rows) {
 			const json = JSON.parse(row.document);

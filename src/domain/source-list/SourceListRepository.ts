@@ -4,5 +4,6 @@ import type { SourceList } from "./SourceList.ts";
 
 export interface SourceListRepository {
 	load(owner: Username): Promise<SourceList>;
+	loadEveryList(): Promise<SourceList[]>;
 	add(owner: Username, entry: SourceEntry): Promise<void>;
 }
