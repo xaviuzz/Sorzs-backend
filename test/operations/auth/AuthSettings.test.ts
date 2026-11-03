@@ -1,4 +1,8 @@
-import { beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, test } from "bun:test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Role } from "../../../src/domain/user/Role.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { AuthSettings } from "../../../src/operations/auth/AuthSettings.ts";
 import { authEnvironment } from "../../AuthEnvironment.ts";
@@ -7,6 +11,10 @@ let sut: SUT;
 
 beforeEach(() => {
 	sut = new SUT();
+});
+
+afterEach(() => {
+	sut.discard();
 });
 
 test("seeds every user from the environment", async () => {
@@ -24,6 +32,12 @@ test("a seeded user carries the role written after the password", async () => {
 
 test("a seeded user without a role is a user", async () => {
 	expect(await sut.roleOf("ana")).toBe("user");
+});
+
+test("a role changed after the first start survives a restart", async () => {
+	await sut.makeAdmin("ana");
+
+	expect(await sut.roleOfAfterRestart("ana")).toBe("admin");
 });
 
 test("refuses to start with an unknown role in SEED_USERS", () => {
@@ -67,15 +81,36 @@ test.each([
 
 class SUT {
 	private readonly settings = AuthSettings.fromEnv(authEnvironment());
+	private readonly dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
+
+	discard(): void {
+		rmSync(this.dataDir, { recursive: true, force: true });
+	}
+
+	async makeAdmin(name: string): Promise<void> {
+		await this.settings
+			.users(this.dataDir)
+			.setRole(Username.from(name), Role.admin());
+	}
+
+	async roleOfAfterRestart(name: string): Promise<string> {
+		const restarted = AuthSettings.fromEnv(authEnvironment());
+		const user = await restarted.users(this.dataDir).find(Username.from(name));
+		return user.role().toString();
+	}
 
 	async acceptsLogin(name: string, password: string): Promise<boolean> {
-		const user = await this.settings.users().find(Username.from(name));
+		const user = await this.settings
+			.users(this.dataDir)
+			.find(Username.from(name));
 		const accepted = await user.accepts(password);
 		return accepted;
 	}
 
 	async roleOf(name: string): Promise<string> {
-		const user = await this.settings.users().find(Username.from(name));
+		const user = await this.settings
+			.users(this.dataDir)
+			.find(Username.from(name));
 		return user.role().toString();
 	}
 

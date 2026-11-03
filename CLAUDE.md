@@ -15,7 +15,7 @@ A change is done when test, lint, typecheck and build pass.
 
 `Dockerfile` runs `bun run start` from source on port 3000 (`PORT`); `Sorzs-e2e` builds it. `docker build -t sorzs-backend .`. In this sandbox `docker run` fails on bridge networking; add `--network host`.
 
-The list lives in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. Each row carries its owner; rows saved before owners existed are given to `xaviuzz` on start. A file that cannot be read stops the start. Tests that start a server or the registry pass a temporary folder.
+The list and the users live in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. Each row carries its owner; rows saved before owners existed are given to `xaviuzz` on start. A file that cannot be read stops the start. On start `SEED_USERS` inserts only the usernames the database lacks. Tests that start a server or the registry pass a temporary folder.
 
 The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS` (`username:password[:role]` pairs separated by commas; role is `admin` or `user`, default `user`). Development and e2e use `xaviuzz:p1casso:admin,ana:pueblos`; tests take them from `test/AuthEnvironment.ts`.
 

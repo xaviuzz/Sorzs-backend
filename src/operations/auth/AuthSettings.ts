@@ -5,7 +5,7 @@ import type { TokenSigner } from "../../domain/user/TokenSigner.ts";
 import { Username } from "../../domain/user/Username.ts";
 import type { Users } from "../../domain/user/Users.ts";
 import { HmacTokenSigner } from "../../infrastructure/crypto/HmacTokenSigner.ts";
-import { InMemoryUsers } from "../../infrastructure/memory/InMemoryUsers.ts";
+import { SqliteUsers } from "../../infrastructure/sqlite/SqliteUsers.ts";
 import { InvalidSettingError } from "./InvalidSettingError.ts";
 import { MissingSettingError } from "./MissingSettingError.ts";
 
@@ -24,8 +24,8 @@ export class AuthSettings {
 		return new AuthSettings(secret, seeded);
 	}
 
-	users(): Users {
-		return new InMemoryUsers(this.seeded);
+	users(dataDir: string): Users {
+		return SqliteUsers.inFolder(dataDir, this.seeded);
 	}
 
 	signer(): TokenSigner {

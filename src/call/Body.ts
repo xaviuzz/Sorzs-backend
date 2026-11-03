@@ -22,6 +22,13 @@ export class Body {
 		return value;
 	}
 
+	requireFilledText(field: string): string {
+		const value = this.requireText(field);
+		const isBlank = value.trim() === "";
+		if (isBlank) throw new InvalidBodyError(`${field} must not be blank`);
+		return value;
+	}
+
 	optionalText(field: string): string {
 		const isLeftOut = !(field in this.fields);
 		if (isLeftOut) return "";
