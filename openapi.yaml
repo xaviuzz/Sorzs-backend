@@ -125,6 +125,69 @@ paths:
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
+  /users.list:
+    post:
+      operationId: usersList
+      summary: Lists every user with their role, for an admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallWithoutBody"
+      responses:
+        "200":
+          description: the users, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersListReply"
+        "400":
+          $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /users.add:
+    post:
+      operationId: usersAdd
+      summary: Adds a user with a password and a role, for an admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersAddCall"
+      responses:
+        "200":
+          description: the created user, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersAddReply"
+        "400":
+          $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /users.setRole:
+    post:
+      operationId: usersSetRole
+      summary: Changes the role of a user, for an admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersSetRoleCall"
+      responses:
+        "200":
+          description: the user with the new role, or an error carried in the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersSetRoleReply"
+        "400":
+          $ref: "#/components/responses/TransportError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 components:
   responses:
     TransportError:
@@ -134,7 +197,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorBody"
     Forbidden:
-      description: missing, malformed or altered token
+      description: missing, malformed or altered token, or a user who is not an admin on an admin operation
       content:
         application/json:
           schema:
@@ -176,6 +239,8 @@ components:
             - FORBIDDEN
             - SOURCE_ALREADY_REGISTERED
             - SOURCE_NAME_TAKEN
+            - USERNAME_TAKEN
+            - LAST_ADMIN
             - INTERNAL_ERROR
         message:
           type: string
@@ -376,4 +441,83 @@ components:
         body:
           oneOf:
             - $ref: "#/components/schemas/SourcesSearchBody"
+            - $ref: "#/components/schemas/ErrorBody"
+    UserEntry:
+      type: object
+      required: [username, role]
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, user]
+    UsersListBody:
+      type: object
+      required: [users]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserEntry"
+    UsersListReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/UsersListBody"
+            - $ref: "#/components/schemas/ErrorBody"
+    UsersAddCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [username, password, role]
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+            role:
+              type: string
+              enum: [admin, user]
+    UsersAddReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/UserEntry"
+            - $ref: "#/components/schemas/ErrorBody"
+    UsersSetRoleCall:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/CallHeader"
+        body:
+          type: object
+          required: [username, role]
+          properties:
+            username:
+              type: string
+            role:
+              type: string
+              enum: [admin, user]
+    UsersSetRoleReply:
+      type: object
+      required: [header, body]
+      properties:
+        header:
+          $ref: "#/components/schemas/ReplyHeader"
+        body:
+          oneOf:
+            - $ref: "#/components/schemas/UserEntry"
             - $ref: "#/components/schemas/ErrorBody"
