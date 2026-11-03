@@ -58,6 +58,43 @@ test("a protected route answers 403 without a token", async () => {
 	});
 });
 
+test("the admin sees the sources of every list with their users over HTTP", async () => {
+	await sut.logInAs("e-10", "xaviuzz", "p1casso");
+	await sut.addSource("e-11", "https://common.example.com", "Common");
+	await sut.logInAs("e-12", "ana", "pueblos");
+	await sut.addSource("e-13", "https://common.example.com", "Common");
+	await sut.logInAs("e-14", "xaviuzz", "p1casso");
+
+	await sut.listSorzsSources("e-15");
+
+	expect(await sut.reply()).toMatchObject({
+		header: { callId: "e-15", status: "ok" },
+		body: {
+			sources: expect.arrayContaining([
+				{ address: "https://common.example.com", favicon: null, users: 2 },
+			]),
+		},
+	});
+});
+
+test("a plain user is refused the sorzs sources with 403", async () => {
+	await sut.logInAs("e-16", "ana", "pueblos");
+
+	await sut.listSorzsSources("e-17");
+
+	expect(sut.status()).toBe(403);
+	expect(await sut.reply()).toEqual({
+		code: "FORBIDDEN",
+		message: "forbidden",
+	});
+});
+
+test("a call to the sorzs sources without a token is refused with 403", async () => {
+	await sut.listSorzsSourcesWithoutToken("e-18");
+
+	expect(sut.status()).toBe(403);
+});
+
 test("wrong credentials answer INVALID_CREDENTIALS over HTTP", async () => {
 	await sut.logInWith("e-5", "xaviuzz", "dali");
 
@@ -145,6 +182,19 @@ class SUT {
 	async listSources(callId: string): Promise<void> {
 		const payload = JSON.stringify({ header: { callId } });
 		await this.post("sources.list", payload);
+	}
+
+	async listSorzsSources(callId: string): Promise<void> {
+		const payload = JSON.stringify({ header: { callId } });
+		await this.post("sorzs.sources", payload);
+	}
+
+	async listSorzsSourcesWithoutToken(callId: string): Promise<void> {
+		const payload = JSON.stringify({ header: { callId } });
+		this.response = await fetch(`${this.server.url}sorzs.sources`, {
+			method: "POST",
+			body: payload,
+		});
 	}
 
 	async callUnknownUrl(): Promise<void> {

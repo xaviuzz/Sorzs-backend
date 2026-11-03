@@ -11,6 +11,7 @@ import { HealthCheck } from "./health/HealthCheck.ts";
 import { JsonOperation } from "./JsonOperation.ts";
 import type { Operation } from "./Operation.ts";
 import type { OwnedHandler } from "./OwnedHandler.ts";
+import { ListSorzsSources } from "./sorzs/ListSorzsSources.ts";
 import { AddSource } from "./sources/AddSource.ts";
 import { InspectSource } from "./sources/InspectSource.ts";
 import { ListSources } from "./sources/ListSources.ts";
@@ -47,6 +48,7 @@ export class OperationRegistry {
 			protectedForAdmin(new ListUsers(users)),
 			protectedForAdmin(new AddUser(users)),
 			protectedForAdmin(new SetRole(users)),
+			protectedForAdmin(new ListSorzsSources(repository)),
 		]);
 	}
 
