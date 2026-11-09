@@ -12,6 +12,10 @@
 	"devDependencies": {
 		"@biomejs/biome": "^2.6.4",
 		"@types/bun": "^1.4.4",
+		"@types/he": "^1.2.3",
 		"typescript": "^7.0.2"
+	},
+	"dependencies": {
+		"he": "^2.0.0"
 	}
 }
