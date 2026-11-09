@@ -21,12 +21,12 @@ The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS
 
 ## Stack
 
-`Bun.serve` and `bun test`, no framework, no validation library. Biome and TypeScript are the only dev dependencies. Add nothing else without asking.
+`Bun.serve` and `bun test`, no framework, no validation library. Biome, TypeScript and `@types/he` are the only dev dependencies; `he` (decodes HTML character references in titles) is the only runtime one. Add nothing else without asking.
 
 ## Layout
 
 `test/` mirrors `src/`. Tests assert on public behavior.
 
-Imports point inward: `domain/` imports nothing outside itself except `call/CallError` and `ErrorCode`, which its errors extend; `infrastructure/` imports `domain/`; `call/` and `operations/` import all of them, never the reverse. `domain/` appears with the first concept, one folder per functional concept; `infrastructure/` has one folder per technology or service (`http/`, `google/`, `memory/`, `sqlite/`, `transport/`). A new class goes in the folder its dependencies allow. Why: `.claude/decisions/domain-has-its-own-folder-one-per-concept.md` and `.claude/decisions/infrastructure-is-organized-by-technology.md`.
+Imports point inward: `domain/` imports no other project layer except `call/CallError` and `ErrorCode`, which its errors extend, and may import a pure library with no I/O (`he`); `infrastructure/` imports `domain/`; `call/` and `operations/` import all of them, never the reverse. `domain/` appears with the first concept, one folder per functional concept; `infrastructure/` has one folder per technology or service (`http/`, `google/`, `memory/`, `sqlite/`, `transport/`). A new class goes in the folder its dependencies allow. Why: `.claude/decisions/domain-has-its-own-folder-one-per-concept.md` and `.claude/decisions/infrastructure-is-organized-by-technology.md`.
 
 Every `expect(...).rejects` and `.resolves` is awaited. Bun waits for an unawaited one, but the `await` makes the check explicit instead of relying on the runner.
