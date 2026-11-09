@@ -1,10 +1,13 @@
+import { decode } from "he";
+
 const LONGEST_TITLE = 200;
 
 export class PageTitle {
 	private constructor(private readonly text: string) {}
 
 	static from(raw: string): PageTitle {
-		const trimmed = raw.trim();
+		const decoded = decode(raw);
+		const trimmed = decoded.trim();
 		const bounded = trimmed.slice(0, LONGEST_TITLE);
 		return new PageTitle(bounded);
 	}

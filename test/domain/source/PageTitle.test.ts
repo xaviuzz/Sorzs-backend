@@ -42,3 +42,33 @@ test("no title is missing", () => {
 
 	expect(title.toJSON()).toBeNull();
 });
+
+test("turns named character references into the characters", () => {
+	const title = PageTitle.from("Tom &amp; Jerry en el Caf&eacute;");
+
+	expect(title.toJSON()).toBe("Tom & Jerry en el Café");
+});
+
+test("turns numeric character references into the characters", () => {
+	const title = PageTitle.from("It&#39;s &#x41;");
+
+	expect(title.toJSON()).toBe("It's A");
+});
+
+test("removes a space written as a reference at both ends", () => {
+	const title = PageTitle.from("&nbsp;Example Domain&nbsp;");
+
+	expect(title.toJSON()).toBe("Example Domain");
+});
+
+test("a title that is only references to spaces is missing", () => {
+	const title = PageTitle.from("&nbsp;&#32;");
+
+	expect(title.toJSON()).toBeNull();
+});
+
+test("counts the characters after turning references into characters", () => {
+	const title = PageTitle.from("&amp;".repeat(200));
+
+	expect(title.toJSON()).toBe("&".repeat(200));
+});

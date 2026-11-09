@@ -28,6 +28,14 @@ test("removes spaces and line breaks around the title", async () => {
 	expect(info.title).toBe("Example");
 });
 
+test("turns character references in the title into plain text", async () => {
+	sut.html("/", "<title>Tom &amp; Jerry en el Caf&eacute;</title>");
+
+	const info = await sut.read("/");
+
+	expect(info.title).toBe("Tom & Jerry en el Café");
+});
+
 test("resolves a relative icon against the page", async () => {
 	sut.html("/docs/index.html", `<link rel="icon" href="icon.png">`);
 
