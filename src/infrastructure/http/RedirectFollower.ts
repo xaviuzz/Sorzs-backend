@@ -1,4 +1,4 @@
-import { WebAddress } from "../../domain/source/WebAddress.ts";
+import { WebAddress } from "../../domain/sorz/WebAddress.ts";
 import { Arrival } from "./Arrival.ts";
 
 const MOST_REDIRECTS = 3;

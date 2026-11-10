@@ -1,0 +1,89 @@
+import { expect, test } from "bun:test";
+import { InvalidNameError } from "../../../src/domain/sorz-list/InvalidNameError.ts";
+import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
+
+test("keeps the name it is given", () => {
+	const name = SorzName.from("Docs");
+
+	expect(name.toString()).toBe("Docs");
+});
+
+test("removes spaces at both ends", () => {
+	const name = SorzName.from("  Docs  ");
+
+	expect(name.toString()).toBe("Docs");
+});
+
+test("refuses an empty name", () => {
+	expect(() => SorzName.from("")).toThrow(InvalidNameError);
+});
+
+test("refuses a name of only spaces", () => {
+	expect(() => SorzName.from("    ")).toThrow(InvalidNameError);
+});
+
+test("accepts a name of 60 characters", () => {
+	const name = SorzName.from("a".repeat(60));
+
+	expect(name.toString()).toBe("a".repeat(60));
+});
+
+test("refuses a name of 61 characters", () => {
+	expect(() => SorzName.from("a".repeat(61))).toThrow(InvalidNameError);
+});
+
+test("counts the characters after removing spaces", () => {
+	const name = SorzName.from(` ${"a".repeat(60)} `);
+
+	expect(name.toString()).toBe("a".repeat(60));
+});
+
+test("names that differ only in letter case are equal", () => {
+	const first = SorzName.from("Docs");
+	const second = SorzName.from("dOCS");
+
+	expect(first.equals(second)).toBe(true);
+});
+
+test("different names are not equal", () => {
+	const first = SorzName.from("Docs");
+	const second = SorzName.from("News");
+
+	expect(first.equals(second)).toBe(false);
+});
+
+test("its refusal carries the invalid body code", () => {
+	const refusal = new InvalidNameError("bad");
+
+	expect(refusal.code).toBe("INVALID_BODY");
+});
+
+test("an empty name given as optional means no name", () => {
+	const name = SorzName.fromOptional("");
+
+	expect(name.toJSON()).toBeNull();
+});
+
+test("an optional name of only spaces means no name", () => {
+	const name = SorzName.fromOptional("    ");
+
+	expect(name.toJSON()).toBeNull();
+});
+
+test("an optional name keeps the text it is given", () => {
+	const name = SorzName.fromOptional("  Docs ");
+
+	expect(name.toJSON()).toBe("Docs");
+});
+
+test("an optional name is still limited to 60 characters", () => {
+	expect(() => SorzName.fromOptional("a".repeat(61))).toThrow(InvalidNameError);
+});
+
+test("no name is equal to no other name", () => {
+	const none = SorzName.none();
+
+	expect(none.equals(SorzName.none())).toBe(false);
+	expect(none.equals(SorzName.from("Docs"))).toBe(false);
+	expect(SorzName.from("Docs").equals(none)).toBe(false);
+});

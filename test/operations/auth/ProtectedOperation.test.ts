@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 test("is named like the operation it protects", () => {
-	expect(sut.operationName()).toBe("sources.list");
+	expect(sut.operationName()).toBe("sorzs.list");
 });
 
 test("serves a request with a valid token", async () => {
@@ -205,7 +205,7 @@ class SUT {
 	}
 
 	private async send(headers: HeadersInit, body: string): Promise<void> {
-		const request = new Request("http://x/sources.list", {
+		const request = new Request("http://x/sorzs.list", {
 			method: "POST",
 			headers,
 			body,
@@ -215,7 +215,7 @@ class SUT {
 }
 
 class ReachedHandler implements OwnedHandler {
-	readonly name = "sources.list";
+	readonly name = "sorzs.list";
 	private readonly served: string[] = [];
 
 	async execute(_call: Call, owner: Username): Promise<unknown> {

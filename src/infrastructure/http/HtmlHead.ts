@@ -1,5 +1,5 @@
-import { FaviconAddress } from "../../domain/source/FaviconAddress.ts";
-import type { WebAddress } from "../../domain/source/WebAddress.ts";
+import { FaviconAddress } from "../../domain/sorz/FaviconAddress.ts";
+import type { WebAddress } from "../../domain/sorz/WebAddress.ts";
 
 export class HtmlHead {
 	private constructor(

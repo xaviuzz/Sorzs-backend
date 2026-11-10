@@ -1,12 +1,12 @@
 import { beforeEach, expect, test } from "bun:test";
 import { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
-import { FaviconAddress } from "../../../src/domain/source/FaviconAddress.ts";
-import { PageInfo } from "../../../src/domain/source/PageInfo.ts";
-import { PageTitle } from "../../../src/domain/source/PageTitle.ts";
-import { Source } from "../../../src/domain/source/Source.ts";
-import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
-import { SourceEntry } from "../../../src/domain/source-list/SourceEntry.ts";
-import { SourceName } from "../../../src/domain/source-list/SourceName.ts";
+import { FaviconAddress } from "../../../src/domain/sorz/FaviconAddress.ts";
+import { PageInfo } from "../../../src/domain/sorz/PageInfo.ts";
+import { PageTitle } from "../../../src/domain/sorz/PageTitle.ts";
+import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
+import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
+import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
+import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
 import { GoogleLinkSearch } from "../../../src/infrastructure/google/GoogleLinkSearch.ts";
 
 let sut: SUT;
@@ -45,7 +45,7 @@ test("the query is encoded in the link", async () => {
 	);
 });
 
-test("the path of the source is kept", async () => {
+test("the path of the sorz is kept", async () => {
 	const result = await sut.search("https://example.com/docs/api", "rust");
 
 	expect(result.url).toBe(
@@ -56,7 +56,7 @@ test("the path of the source is kept", async () => {
 	);
 });
 
-test("the final slash of the source is dropped", async () => {
+test("the final slash of the sorz is dropped", async () => {
 	const result = await sut.search("https://example.com/docs/", "rust");
 
 	expect(result.url).toBe(
@@ -64,7 +64,7 @@ test("the final slash of the source is dropped", async () => {
 	);
 });
 
-test("the root slash of the source is dropped", async () => {
+test("the root slash of the sorz is dropped", async () => {
 	const result = await sut.search("https://example.com/", "rust");
 
 	expect(result.url).toBe(
@@ -72,7 +72,7 @@ test("the root slash of the source is dropped", async () => {
 	);
 });
 
-test("the port of the source is kept", async () => {
+test("the port of the sorz is kept", async () => {
 	const result = await sut.search("http://localhost:8080/docs", "rust");
 
 	expect(result.url).toBe(
@@ -80,7 +80,7 @@ test("the port of the source is kept", async () => {
 	);
 });
 
-test("a question or a fragment in the source address is not part of the site", async () => {
+test("a question or a fragment in the sorz address is not part of the site", async () => {
 	const result = await sut.search(
 		"https://example.com/docs?lang=es#top",
 		"rust",
@@ -91,14 +91,14 @@ test("a question or a fragment in the source address is not part of the site", a
 	);
 });
 
-test("the result comes from the source by its display name", async () => {
+test("the result comes from the sorz by its display name", async () => {
 	const result = await sut.searchNamed(
 		"https://example.com",
 		"My docs",
 		"rust",
 	);
 
-	expect(result.source).toBe("My docs");
+	expect(result.sorz).toBe("My docs");
 });
 
 class SUT {
@@ -110,8 +110,8 @@ class SUT {
 
 	async searchNamed(address: string, name: string, query: string) {
 		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
-		const source = Source.register(SourceAddress.from(address), info);
-		const entry = new SourceEntry(source, SourceName.fromOptional(name));
+		const sorz = Sorz.register(SorzAddress.from(address), info);
+		const entry = new SorzEntry(sorz, SorzName.fromOptional(name));
 		const result = await this.searcher.search(entry, SearchQuery.from(query));
 		return result.toJSON();
 	}

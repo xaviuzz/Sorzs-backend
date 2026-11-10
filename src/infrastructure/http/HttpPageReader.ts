@@ -1,8 +1,8 @@
-import { PageInfo } from "../../domain/source/PageInfo.ts";
-import type { PageReader } from "../../domain/source/PageReader.ts";
-import { PageTitle } from "../../domain/source/PageTitle.ts";
-import type { SourceAddress } from "../../domain/source/SourceAddress.ts";
-import { WebAddress } from "../../domain/source/WebAddress.ts";
+import { PageInfo } from "../../domain/sorz/PageInfo.ts";
+import type { PageReader } from "../../domain/sorz/PageReader.ts";
+import { PageTitle } from "../../domain/sorz/PageTitle.ts";
+import type { SorzAddress } from "../../domain/sorz/SorzAddress.ts";
+import { WebAddress } from "../../domain/sorz/WebAddress.ts";
 import { FaviconFinder } from "./FaviconFinder.ts";
 import { HtmlHead } from "./HtmlHead.ts";
 import { RedirectFollower } from "./RedirectFollower.ts";
@@ -15,7 +15,7 @@ export class HttpPageReader implements PageReader {
 
 	constructor(private readonly timeoutMs = DEFAULT_TIMEOUT_MS) {}
 
-	async read(address: SourceAddress): Promise<PageInfo> {
+	async read(address: SorzAddress): Promise<PageInfo> {
 		const signal = AbortSignal.timeout(this.timeoutMs);
 		let info = PageInfo.none();
 		try {

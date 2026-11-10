@@ -41,52 +41,52 @@ paths:
                 $ref: "#/components/schemas/AuthLoginReply"
         "400":
           $ref: "#/components/responses/TransportError"
-  /sources.add:
+  /sorzs.add:
     post:
-      operationId: sourcesAdd
-      summary: Adds a source to the user's list
+      operationId: sorzsAdd
+      summary: Adds a sorz to the user's list
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourcesAddCall"
+              $ref: "#/components/schemas/SorzsAddCall"
       responses:
         "200":
           description: the created entry, or an error carried in the message
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourcesAddReply"
+                $ref: "#/components/schemas/SorzsAddReply"
         "400":
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
-  /sources.inspect:
+  /sorzs.inspect:
     post:
-      operationId: sourcesInspect
+      operationId: sorzsInspect
       summary: Reads the title and favicon a page offers, registering nothing
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourcesInspectCall"
+              $ref: "#/components/schemas/SorzsInspectCall"
       responses:
         "200":
           description: the title and favicon, or an error carried in the message
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourcesInspectReply"
+                $ref: "#/components/schemas/SorzsInspectReply"
         "400":
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
-  /sources.list:
+  /sorzs.list:
     post:
-      operationId: sourcesList
-      summary: Lists the user's sources in order of addition
+      operationId: sorzsList
+      summary: Lists the user's sorzs in order of addition
       requestBody:
         required: true
         content:
@@ -99,28 +99,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourcesListReply"
+                $ref: "#/components/schemas/SorzsListReply"
         "400":
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
-  /sources.search:
+  /sorzs.search:
     post:
-      operationId: sourcesSearch
-      summary: Searches a term across the user's sources
+      operationId: sorzsSearch
+      summary: Searches a term across the user's sorzs
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourcesSearchCall"
+              $ref: "#/components/schemas/SorzsSearchCall"
       responses:
         "200":
-          description: one result per source in list order, or an error carried in the message
+          description: one result per sorz in list order, or an error carried in the message
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SourcesSearchReply"
+                $ref: "#/components/schemas/SorzsSearchReply"
         "400":
           $ref: "#/components/responses/TransportError"
         "403":
@@ -188,10 +188,10 @@ paths:
           $ref: "#/components/responses/TransportError"
         "403":
           $ref: "#/components/responses/Forbidden"
-  /sorzs.sources:
+  /sorzs.census:
     post:
-      operationId: sorzsSources
-      summary: Lists every source held by at least one user's list, with how many users hold it, for an admin
+      operationId: sorzsCensus
+      summary: Lists every sorz held by at least one user's list, with how many users hold it, for an admin
       requestBody:
         required: true
         content:
@@ -200,11 +200,11 @@ paths:
               $ref: "#/components/schemas/CallWithoutBody"
       responses:
         "200":
-          description: the sources ordered by address, or an error carried in the message
+          description: the sorzs ordered by address, or an error carried in the message
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SorzsSourcesReply"
+                $ref: "#/components/schemas/SorzsCensusReply"
         "400":
           $ref: "#/components/responses/TransportError"
         "403":
@@ -258,8 +258,8 @@ components:
             - INVALID_BODY
             - INVALID_CREDENTIALS
             - FORBIDDEN
-            - SOURCE_ALREADY_REGISTERED
-            - SOURCE_NAME_TAKEN
+            - SORZ_ALREADY_REGISTERED
+            - SORZ_NAME_TAKEN
             - USERNAME_TAKEN
             - LAST_ADMIN
             - INTERNAL_ERROR
@@ -315,11 +315,11 @@ components:
           oneOf:
             - $ref: "#/components/schemas/AuthLoginBody"
             - $ref: "#/components/schemas/ErrorBody"
-    SourceEntry:
+    SorzEntry:
       type: object
-      required: [sourceId, name, address, title, favicon]
+      required: [sorzId, name, address, title, favicon]
       properties:
-        sourceId:
+        sorzId:
           type: string
         name:
           type: string
@@ -332,7 +332,7 @@ components:
         favicon:
           type: string
           nullable: true
-    SourcesAddCall:
+    SorzsAddCall:
       type: object
       required: [header, body]
       properties:
@@ -346,7 +346,7 @@ components:
               type: string
             name:
               type: string
-    SourcesAddReply:
+    SorzsAddReply:
       type: object
       required: [header, body]
       properties:
@@ -354,9 +354,9 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - $ref: "#/components/schemas/SourceEntry"
+            - $ref: "#/components/schemas/SorzEntry"
             - $ref: "#/components/schemas/ErrorBody"
-    SourcesInspectCall:
+    SorzsInspectCall:
       type: object
       required: [header, body]
       properties:
@@ -379,7 +379,7 @@ components:
         favicon:
           type: string
           nullable: true
-    SourcesInspectBody:
+    SorzsInspectBody:
       type: object
       required: [title, favicon, candidates]
       properties:
@@ -393,7 +393,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/InspectCandidate"
-    SourcesInspectReply:
+    SorzsInspectReply:
       type: object
       required: [header, body]
       properties:
@@ -401,17 +401,17 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - $ref: "#/components/schemas/SourcesInspectBody"
+            - $ref: "#/components/schemas/SorzsInspectBody"
             - $ref: "#/components/schemas/ErrorBody"
-    SourcesListBody:
+    SorzsListBody:
       type: object
-      required: [sources]
+      required: [sorzs]
       properties:
-        sources:
+        sorzs:
           type: array
           items:
-            $ref: "#/components/schemas/SourceEntry"
-    SourcesListReply:
+            $ref: "#/components/schemas/SorzEntry"
+    SorzsListReply:
       type: object
       required: [header, body]
       properties:
@@ -419,9 +419,9 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - $ref: "#/components/schemas/SourcesListBody"
+            - $ref: "#/components/schemas/SorzsListBody"
             - $ref: "#/components/schemas/ErrorBody"
-    SourcesSearchCall:
+    SorzsSearchCall:
       type: object
       required: [header, body]
       properties:
@@ -435,7 +435,7 @@ components:
               type: string
     SearchResult:
       type: object
-      required: [title, url, description, source]
+      required: [title, url, description, sorz]
       properties:
         title:
           type: string
@@ -443,9 +443,9 @@ components:
           type: string
         description:
           type: string
-        source:
+        sorz:
           type: string
-    SourcesSearchBody:
+    SorzsSearchBody:
       type: object
       required: [results]
       properties:
@@ -453,7 +453,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SearchResult"
-    SourcesSearchReply:
+    SorzsSearchReply:
       type: object
       required: [header, body]
       properties:
@@ -461,9 +461,9 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - $ref: "#/components/schemas/SourcesSearchBody"
+            - $ref: "#/components/schemas/SorzsSearchBody"
             - $ref: "#/components/schemas/ErrorBody"
-    SorzsSourceEntry:
+    CensusEntry:
       type: object
       required: [address, favicon, users]
       properties:
@@ -474,15 +474,15 @@ components:
           nullable: true
         users:
           type: integer
-    SorzsSourcesBody:
+    SorzsCensusBody:
       type: object
-      required: [sources]
+      required: [sorzs]
       properties:
-        sources:
+        sorzs:
           type: array
           items:
-            $ref: "#/components/schemas/SorzsSourceEntry"
-    SorzsSourcesReply:
+            $ref: "#/components/schemas/CensusEntry"
+    SorzsCensusReply:
       type: object
       required: [header, body]
       properties:
@@ -490,7 +490,7 @@ components:
           $ref: "#/components/schemas/ReplyHeader"
         body:
           oneOf:
-            - $ref: "#/components/schemas/SorzsSourcesBody"
+            - $ref: "#/components/schemas/SorzsCensusBody"
             - $ref: "#/components/schemas/ErrorBody"
     UserEntry:
       type: object

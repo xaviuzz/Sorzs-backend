@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { SourceAddress } from "../../../src/domain/source/SourceAddress.ts";
+import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
 import { HttpPageReader } from "../../../src/infrastructure/http/HttpPageReader.ts";
 
 let sut: SUT;
@@ -258,14 +258,14 @@ class SUT {
 
 	async readAddress(address: string, timeoutMs?: number): Promise<Described> {
 		const reader = new HttpPageReader(timeoutMs);
-		const info = await reader.read(SourceAddress.from(address));
+		const info = await reader.read(SorzAddress.from(address));
 		return info.toJSON();
 	}
 
 	readTogether(paths: string[], timeoutMs?: number): Promise<Described[]> {
 		const reader = new HttpPageReader(timeoutMs);
 		const reads = paths.map(async (path) => {
-			const info = await reader.read(SourceAddress.from(this.url(path)));
+			const info = await reader.read(SorzAddress.from(this.url(path)));
 			return info.toJSON();
 		});
 		return Promise.all(reads);

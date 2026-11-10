@@ -1,4 +1,4 @@
-import type { WebAddress } from "../../domain/source/WebAddress.ts";
+import type { WebAddress } from "../../domain/sorz/WebAddress.ts";
 
 const LARGEST_PAGE_BYTES = 1024 * 1024;
 
