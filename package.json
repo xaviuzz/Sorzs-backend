@@ -5,7 +5,8 @@
 	"scripts": {
 		"start": "bun src/main.ts",
 		"test": "bun test",
-		"lint": "biome check .",
+		"lint": "biome check . && bun run lint:language",
+		"lint:language": "grep -rIiP '(?<!re)source' src test --exclude=schema.d.ts --exclude-from=language-exceptions.txt; test $? -eq 1",
 		"typecheck": "tsc --noEmit",
 		"build": "bun build src/main.ts --target bun --outdir dist"
 	},

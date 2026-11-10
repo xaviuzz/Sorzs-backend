@@ -5,7 +5,7 @@ TypeScript API on Bun. Owns the contract, `openapi.yaml`. Part of the Sorzs umbr
 ## Commands
 
 - `bun run test`: `bun test`
-- `bun run lint`: Biome check (lint and format); `bunx biome check --write .` fixes
+- `bun run lint`: Biome check (lint and format) and the language check (`lint:language`, no word "source" under `src/` and `test/` except files listed in `language-exceptions.txt`); `bunx biome check --write .` fixes
 - `bun run typecheck`: `tsc --noEmit`
 - `bun run build`: `bun build` into `dist/`
 
@@ -30,3 +30,5 @@ The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS
 Imports point inward: `domain/` imports no other project layer except `call/CallError` and `ErrorCode`, which its errors extend, and may import a pure library with no I/O (`he`); `infrastructure/` imports `domain/`; `call/` and `operations/` import all of them, never the reverse. `domain/` appears with the first concept, one folder per functional concept; `infrastructure/` has one folder per technology or service (`http/`, `google/`, `memory/`, `sqlite/`, `transport/`). A new class goes in the folder its dependencies allow. Why: `.claude/decisions/domain-has-its-own-folder-one-per-concept.md` and `.claude/decisions/infrastructure-is-organized-by-technology.md`.
 
 Every `expect(...).rejects` and `.resolves` is awaited. Bun waits for an unawaited one, but the `await` makes the check explicit instead of relying on the runner.
+
+`language-exceptions.txt` lists `SqliteSorzListRepository.ts` and its test: they read the key `sourceId` that entries saved before the rename carry, and rewrite it to `sorzId`.
