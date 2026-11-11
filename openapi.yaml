@@ -315,9 +315,12 @@ components:
           oneOf:
             - $ref: "#/components/schemas/AuthLoginBody"
             - $ref: "#/components/schemas/ErrorBody"
+    SearchProviderId:
+      type: string
+      enum: [reddit, generic]
     SorzEntry:
       type: object
-      required: [sorzId, name, address, title, favicon]
+      required: [sorzId, name, address, title, favicon, provider]
       properties:
         sorzId:
           type: string
@@ -332,6 +335,8 @@ components:
         favicon:
           type: string
           nullable: true
+        provider:
+          $ref: "#/components/schemas/SearchProviderId"
     SorzsAddCall:
       type: object
       required: [header, body]
@@ -465,13 +470,15 @@ components:
             - $ref: "#/components/schemas/ErrorBody"
     CensusEntry:
       type: object
-      required: [address, favicon, users]
+      required: [address, favicon, provider, users]
       properties:
         address:
           type: string
         favicon:
           type: string
           nullable: true
+        provider:
+          $ref: "#/components/schemas/SearchProviderId"
         users:
           type: integer
     SorzsCensusBody:
