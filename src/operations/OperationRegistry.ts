@@ -32,6 +32,7 @@ export class OperationRegistry {
 	static standard(dataDir: string, auth: AuthSettings): OperationRegistry {
 		const repository = SqliteSorzListRepository.inFolder(dataDir);
 		const reader = new HttpPageReader();
+		const providers = new SearchProvidersFactory().build();
 		const signer = auth.signer();
 		const users = auth.users(dataDir);
 		const protectedBy = (handler: OwnedHandler) =>
@@ -41,16 +42,14 @@ export class OperationRegistry {
 		return new OperationRegistry([
 			new JsonOperation(new HealthCheck()),
 			new JsonOperation(new AuthLogin(users, signer)),
-			protectedBy(new AddSorz(repository, reader)),
+			protectedBy(new AddSorz(repository, reader, providers)),
 			protectedBy(new InspectSorz(reader)),
-			protectedBy(new ListSorzs(repository)),
-			protectedBy(
-				new SearchSorzs(repository, new SearchProvidersFactory().build()),
-			),
+			protectedBy(new ListSorzs(repository, providers)),
+			protectedBy(new SearchSorzs(repository, providers)),
 			protectedForAdmin(new ListUsers(users)),
 			protectedForAdmin(new AddUser(users)),
 			protectedForAdmin(new SetRole(users)),
-			protectedForAdmin(new Census(repository)),
+			protectedForAdmin(new Census(repository, providers)),
 		]);
 	}
 

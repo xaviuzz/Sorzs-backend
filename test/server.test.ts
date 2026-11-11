@@ -71,7 +71,12 @@ test("the admin sees the sorzs of every list with their users over HTTP", async 
 		header: { callId: "e-15", status: "ok" },
 		body: {
 			sorzs: expect.arrayContaining([
-				{ address: "https://common.example.com", favicon: null, users: 2 },
+				{
+					address: "https://common.example.com",
+					favicon: null,
+					provider: "generic",
+					users: 2,
+				},
 			]),
 		},
 	});

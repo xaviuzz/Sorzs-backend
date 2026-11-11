@@ -1,3 +1,4 @@
+import { ProviderId } from "../../../src/domain/search/ProviderId.ts";
 import type { SearchProvider } from "../../../src/domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
 import { SearchResult } from "../../../src/domain/search/SearchResult.ts";
@@ -17,6 +18,11 @@ export class StubSearchProvider implements SearchProvider {
 
 	static thatSearchesAnything(title: string): StubSearchProvider {
 		return new StubSearchProvider(title, "", true);
+	}
+
+	id(): ProviderId {
+		if (this.searchesAnything) return ProviderId.generic();
+		return ProviderId.reddit();
 	}
 
 	canSearch(entry: SorzEntry): boolean {

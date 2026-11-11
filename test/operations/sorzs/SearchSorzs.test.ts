@@ -120,7 +120,14 @@ class SUT {
 		),
 	);
 	private readonly adding = new JsonOperation(
-		new OwnedBy(xaviuzz, new AddSorz(this.repository, this.reader)),
+		new OwnedBy(
+			xaviuzz,
+			new AddSorz(
+				this.repository,
+				this.reader,
+				new SearchProviders([], this.searching),
+			),
+		),
 	);
 	private response = new Response();
 
@@ -146,7 +153,14 @@ class SUT {
 			body: payload,
 		});
 		const operation = new JsonOperation(
-			new OwnedBy(ana, new AddSorz(this.repository, this.reader)),
+			new OwnedBy(
+				ana,
+				new AddSorz(
+					this.repository,
+					this.reader,
+					new SearchProviders([], this.searching),
+				),
+			),
 		);
 		await operation.serve(request);
 	}

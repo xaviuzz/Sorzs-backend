@@ -1,6 +1,6 @@
 import { DomainQualificationStrategy } from "../../domain/search/DomainQualificationStrategy.ts";
 import { SearchProviders } from "../../domain/search/SearchProviders.ts";
-import { GoogleSearchProvider } from "../../infrastructure/google/GoogleSearchProvider.ts";
+import { GenericSearchProvider } from "../../infrastructure/google/GenericSearchProvider.ts";
 import { RedditSearchProvider } from "../../infrastructure/reddit/RedditSearchProvider.ts";
 
 export class SearchProvidersFactory {
@@ -8,7 +8,7 @@ export class SearchProvidersFactory {
 		const specialists = [
 			new RedditSearchProvider(new DomainQualificationStrategy("reddit.com")),
 		];
-		const catchAll = new GoogleSearchProvider();
+		const catchAll = new GenericSearchProvider();
 		return new SearchProviders(specialists, catchAll);
 	}
 }

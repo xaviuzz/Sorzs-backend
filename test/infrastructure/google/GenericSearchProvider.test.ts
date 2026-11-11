@@ -7,7 +7,7 @@ import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
 import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
 import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
-import { GoogleSearchProvider } from "../../../src/infrastructure/google/GoogleSearchProvider.ts";
+import { GenericSearchProvider } from "../../../src/infrastructure/google/GenericSearchProvider.ts";
 
 let sut: SUT;
 
@@ -107,7 +107,7 @@ test("the result comes from the sorz by its display name", async () => {
 });
 
 class SUT {
-	private readonly searcher = new GoogleSearchProvider();
+	private readonly searcher = new GenericSearchProvider();
 
 	canSearch(address: string): boolean {
 		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());

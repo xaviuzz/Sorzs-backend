@@ -1,3 +1,4 @@
+import { ProviderId } from "../../domain/search/ProviderId.ts";
 import type { QualificationStrategy } from "../../domain/search/QualificationStrategy.ts";
 import type { SearchProvider } from "../../domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
@@ -9,6 +10,10 @@ const REDDIT_SEARCH = "https://www.reddit.com/search/";
 
 export class RedditSearchProvider implements SearchProvider {
 	constructor(private readonly qualification: QualificationStrategy) {}
+
+	id(): ProviderId {
+		return ProviderId.reddit();
+	}
 
 	canSearch(entry: SorzEntry): boolean {
 		return this.qualification.qualifies(entry);

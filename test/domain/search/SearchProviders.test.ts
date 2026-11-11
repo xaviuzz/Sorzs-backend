@@ -40,6 +40,22 @@ test("the catch-all answers when no provider can search the sorz", async () => {
 	expect(title).toBe("catch-all");
 });
 
+test("names the specialist that can search the sorz", () => {
+	const sut = SUT.providing(StubSearchProvider.that("for a", "https://a.com"));
+
+	const id = sut.idFor("https://a.com");
+
+	expect(id).toBe("reddit");
+});
+
+test("names the generic provider when no specialist can search the sorz", () => {
+	const sut = SUT.providing(StubSearchProvider.that("for a", "https://a.com"));
+
+	const id = sut.idFor("https://other.com");
+
+	expect(id).toBe("generic");
+});
+
 class SUT {
 	static providing(...specialists: StubSearchProvider[]): SUT {
 		const catchAll = StubSearchProvider.thatSearchesAnything("catch-all");
@@ -49,10 +65,19 @@ class SUT {
 	private constructor(private readonly providers: SearchProviders) {}
 
 	async titleFor(address: string): Promise<string> {
-		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
-		const sorz = Sorz.register(SorzAddress.from(address), info);
-		const entry = new SorzEntry(sorz, SorzName.fromOptional(""));
+		const entry = this.entryAt(address);
 		const result = await this.providers.search(entry, SearchQuery.from("q"));
 		return result.toJSON().title;
+	}
+
+	idFor(address: string): string {
+		const entry = this.entryAt(address);
+		return this.providers.idFor(entry).toJSON();
+	}
+
+	private entryAt(address: string): SorzEntry {
+		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
+		const sorz = Sorz.register(SorzAddress.from(address), info);
+		return new SorzEntry(sorz, SorzName.fromOptional(""));
 	}
 }

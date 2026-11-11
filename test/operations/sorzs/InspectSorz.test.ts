@@ -7,6 +7,7 @@ import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { InspectSorz } from "../../../src/operations/sorzs/InspectSorz.ts";
 import { ListSorzs } from "../../../src/operations/sorzs/ListSorzs.ts";
+import { SearchProvidersFactory } from "../../../src/operations/sorzs/SearchProvidersFactory.ts";
 import { FakePageReader } from "./FakePageReader.ts";
 import { xaviuzz } from "./Owners.ts";
 
@@ -140,7 +141,10 @@ class SUT {
 		new OwnedBy(xaviuzz, new InspectSorz(this.reader)),
 	);
 	private readonly listing = new JsonOperation(
-		new OwnedBy(xaviuzz, new ListSorzs(this.repository)),
+		new OwnedBy(
+			xaviuzz,
+			new ListSorzs(this.repository, new SearchProvidersFactory().build()),
+		),
 	);
 	private response = new Response();
 

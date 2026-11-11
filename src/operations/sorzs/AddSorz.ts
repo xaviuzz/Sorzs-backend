@@ -1,4 +1,5 @@
 import type { Call } from "../../call/Call.ts";
+import type { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import type { PageReader } from "../../domain/sorz/PageReader.ts";
 import { Sorz } from "../../domain/sorz/Sorz.ts";
 import { SorzAddress } from "../../domain/sorz/SorzAddress.ts";
@@ -13,6 +14,7 @@ export class AddSorz implements OwnedHandler {
 	constructor(
 		private readonly repository: SorzListRepository,
 		private readonly reader: PageReader,
+		private readonly providers: SearchProviders,
 	) {}
 
 	async execute(call: Call, owner: Username): Promise<unknown> {
@@ -22,6 +24,7 @@ export class AddSorz implements OwnedHandler {
 		const list = await this.repository.load(owner);
 		const entry = list.add(Sorz.register(address, info), name);
 		await this.repository.add(owner, entry);
-		return entry.toJSON();
+		const provider = this.providers.idFor(entry).toJSON();
+		return { ...entry.toJSON(), provider };
 	}
 }

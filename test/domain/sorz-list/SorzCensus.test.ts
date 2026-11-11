@@ -7,6 +7,7 @@ import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { InMemorySorzListRepository } from "../../../src/infrastructure/memory/InMemorySorzListRepository.ts";
+import { SearchProvidersFactory } from "../../../src/operations/sorzs/SearchProvidersFactory.ts";
 
 let sut: SUT;
 
@@ -26,7 +27,12 @@ test("a sorz held by one user counts one user", async () => {
 	await sut.takeCensus();
 
 	expect(sut.sorzs()).toEqual([
-		{ address: "https://example.com", favicon: null, users: 1 },
+		{
+			address: "https://example.com",
+			favicon: null,
+			provider: "generic",
+			users: 1,
+		},
 	]);
 });
 
@@ -37,7 +43,12 @@ test("a sorz held by two users counts two users", async () => {
 	await sut.takeCensus();
 
 	expect(sut.sorzs()).toEqual([
-		{ address: "https://example.com", favicon: null, users: 2 },
+		{
+			address: "https://example.com",
+			favicon: null,
+			provider: "generic",
+			users: 2,
+		},
 	]);
 });
 
@@ -63,6 +74,7 @@ test("the sorz brings its favicon", async () => {
 		{
 			address: "https://example.com",
 			favicon: "https://example.com/i.png",
+			provider: "generic",
 			users: 1,
 		},
 	]);
@@ -108,7 +120,7 @@ test("an address with a trailing slash is a sorz apart", async () => {
 
 class SUT {
 	private readonly repository = new InMemorySorzListRepository();
-	private census = SorzCensus.of([]);
+	private census = SorzCensus.of([], new SearchProvidersFactory().build());
 
 	async hold(owner: string, address: string, favicon?: string): Promise<void> {
 		const pageInfo = this.pageInfoWith(favicon);
@@ -119,7 +131,7 @@ class SUT {
 
 	async takeCensus(): Promise<void> {
 		const lists = await this.repository.loadEveryList();
-		this.census = SorzCensus.of(lists);
+		this.census = SorzCensus.of(lists, new SearchProvidersFactory().build());
 	}
 
 	sorzs() {

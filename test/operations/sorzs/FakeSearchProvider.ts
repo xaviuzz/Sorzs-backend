@@ -1,3 +1,4 @@
+import { ProviderId } from "../../../src/domain/search/ProviderId.ts";
 import type { SearchProvider } from "../../../src/domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
 import { SearchResult } from "../../../src/domain/search/SearchResult.ts";
@@ -18,6 +19,10 @@ export class FakeSearchProvider implements SearchProvider {
 
 	answersOnlyWhenTogether(count: number): void {
 		this.expectedTogether = count;
+	}
+
+	id(): ProviderId {
+		return ProviderId.generic();
 	}
 
 	canSearch(): boolean {

@@ -1,18 +1,20 @@
+import type { SearchProviders } from "../search/SearchProviders.ts";
 import type { SorzList } from "./SorzList.ts";
 
 type CensusLine = {
 	address: string;
 	favicon: string | null;
+	provider: "reddit" | "generic";
 	users: number;
 };
 
 export class SorzCensus {
 	private constructor(private readonly lines: CensusLine[]) {}
 
-	static of(lists: SorzList[]): SorzCensus {
+	static of(lists: SorzList[], providers: SearchProviders): SorzCensus {
 		const linesByAddress = new Map<string, CensusLine>();
 		for (const list of lists) {
-			SorzCensus.countList(list, linesByAddress);
+			SorzCensus.countList(list, providers, linesByAddress);
 		}
 		const lines = SorzCensus.orderedByAddress([...linesByAddress.values()]);
 		return new SorzCensus(lines);
@@ -25,13 +27,16 @@ export class SorzCensus {
 
 	private static countList(
 		list: SorzList,
+		providers: SearchProviders,
 		linesByAddress: Map<string, CensusLine>,
 	): void {
 		for (const entry of list.entries()) {
 			const { address, favicon } = entry.toJSON();
+			const provider = providers.idFor(entry).toJSON();
 			const known = linesByAddress.get(address);
 			if (known) known.users += 1;
-			if (!known) linesByAddress.set(address, { address, favicon, users: 1 });
+			if (!known)
+				linesByAddress.set(address, { address, favicon, provider, users: 1 });
 		}
 	}
 

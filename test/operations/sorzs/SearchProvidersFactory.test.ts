@@ -26,7 +26,14 @@ test("a sorz on reddit is searched on Reddit and any other on Google", async () 
 class SUT {
 	private readonly repository = new InMemorySorzListRepository();
 	private readonly adding = new JsonOperation(
-		new OwnedBy(xaviuzz, new AddSorz(this.repository, new FakePageReader())),
+		new OwnedBy(
+			xaviuzz,
+			new AddSorz(
+				this.repository,
+				new FakePageReader(),
+				new SearchProvidersFactory().build(),
+			),
+		),
 	);
 	private readonly searching = new JsonOperation(
 		new OwnedBy(
