@@ -1,9 +1,9 @@
+import type { SearchProvider } from "../../../src/domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
 import { SearchResult } from "../../../src/domain/search/SearchResult.ts";
-import type { SorzSearch } from "../../../src/domain/search/SorzSearch.ts";
 import type { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 
-export class FakeSorzSearch implements SorzSearch {
+export class FakeSearchProvider implements SearchProvider {
 	private readonly queries: string[] = [];
 	private readonly slowSites = new Set<string>();
 	private expectedTogether = 1;
@@ -18,6 +18,10 @@ export class FakeSorzSearch implements SorzSearch {
 
 	answersOnlyWhenTogether(count: number): void {
 		this.expectedTogether = count;
+	}
+
+	canSearch(): boolean {
+		return true;
 	}
 
 	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResult> {

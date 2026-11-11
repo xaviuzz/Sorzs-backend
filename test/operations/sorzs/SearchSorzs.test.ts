@@ -1,11 +1,12 @@
 import { beforeEach, expect, test } from "bun:test";
+import { SearchProviders } from "../../../src/domain/search/SearchProviders.ts";
 import { InMemorySorzListRepository } from "../../../src/infrastructure/memory/InMemorySorzListRepository.ts";
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSorz } from "../../../src/operations/sorzs/AddSorz.ts";
 import { SearchSorzs } from "../../../src/operations/sorzs/SearchSorzs.ts";
 import { FakePageReader } from "./FakePageReader.ts";
-import { FakeSorzSearch } from "./FakeSorzSearch.ts";
+import { FakeSearchProvider } from "./FakeSearchProvider.ts";
 import { ana, xaviuzz } from "./Owners.ts";
 
 let sut: SUT;
@@ -111,9 +112,12 @@ type Reply = { header: Record<string, unknown>; body: unknown };
 class SUT {
 	private readonly repository = new InMemorySorzListRepository();
 	private readonly reader = new FakePageReader();
-	private readonly searching = new FakeSorzSearch();
+	private readonly searching = new FakeSearchProvider();
 	private readonly operation = new JsonOperation(
-		new OwnedBy(xaviuzz, new SearchSorzs(this.repository, this.searching)),
+		new OwnedBy(
+			xaviuzz,
+			new SearchSorzs(this.repository, new SearchProviders([], this.searching)),
+		),
 	);
 	private readonly adding = new JsonOperation(
 		new OwnedBy(xaviuzz, new AddSorz(this.repository, this.reader)),

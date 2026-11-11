@@ -7,12 +7,17 @@ import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
 import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
 import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
-import { GoogleLinkSearch } from "../../../src/infrastructure/google/GoogleLinkSearch.ts";
+import { GoogleSearchProvider } from "../../../src/infrastructure/google/GoogleSearchProvider.ts";
 
 let sut: SUT;
 
 beforeEach(() => {
 	sut = new SUT();
+});
+
+test("can search any sorz", () => {
+	expect(sut.canSearch("https://example.com")).toBe(true);
+	expect(sut.canSearch("https://www.reddit.com/r/spain")).toBe(true);
 });
 
 test("the title tells to search on Google", async () => {
@@ -102,7 +107,14 @@ test("the result comes from the sorz by its display name", async () => {
 });
 
 class SUT {
-	private readonly searcher = new GoogleLinkSearch();
+	private readonly searcher = new GoogleSearchProvider();
+
+	canSearch(address: string): boolean {
+		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
+		const sorz = Sorz.register(SorzAddress.from(address), info);
+		const entry = new SorzEntry(sorz, SorzName.fromOptional(""));
+		return this.searcher.canSearch(entry);
+	}
 
 	async search(address: string, query: string) {
 		return this.searchNamed(address, "", query);

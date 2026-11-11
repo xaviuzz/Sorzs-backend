@@ -1,12 +1,16 @@
+import type { SearchProvider } from "../../domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { SearchResult } from "../../domain/search/SearchResult.ts";
-import type { SorzSearch } from "../../domain/search/SorzSearch.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 
 const TITLE = "Search it on Google";
 const GOOGLE_SEARCH = "https://www.google.com/search";
 
-export class GoogleLinkSearch implements SorzSearch {
+export class GoogleSearchProvider implements SearchProvider {
+	canSearch(_entry: SorzEntry): boolean {
+		return true;
+	}
+
 	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResult> {
 		const site = entry.site();
 		const text = query.toString();

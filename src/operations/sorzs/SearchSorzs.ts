@@ -1,8 +1,8 @@
 import type { Call } from "../../call/Call.ts";
+import type { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import type { SearchResult } from "../../domain/search/SearchResult.ts";
 import { SearchResults } from "../../domain/search/SearchResults.ts";
-import type { SorzSearch } from "../../domain/search/SorzSearch.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 import type { SorzListRepository } from "../../domain/sorz-list/SorzListRepository.ts";
 import type { Username } from "../../domain/user/Username.ts";
@@ -13,7 +13,7 @@ export class SearchSorzs implements OwnedHandler {
 
 	constructor(
 		private readonly repository: SorzListRepository,
-		private readonly search: SorzSearch,
+		private readonly providers: SearchProviders,
 	) {}
 
 	async execute(call: Call, owner: Username): Promise<unknown> {
@@ -28,7 +28,9 @@ export class SearchSorzs implements OwnedHandler {
 		entries: SorzEntry[],
 		query: SearchQuery,
 	): Promise<SearchResult[]> {
-		const searches = entries.map((entry) => this.search.search(entry, query));
+		const searches = entries.map((entry) =>
+			this.providers.search(entry, query),
+		);
 		return Promise.all(searches);
 	}
 

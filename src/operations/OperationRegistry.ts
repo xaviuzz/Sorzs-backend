@@ -1,4 +1,3 @@
-import { GoogleLinkSearch } from "../infrastructure/google/GoogleLinkSearch.ts";
 import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
 import { SqliteSorzListRepository } from "../infrastructure/sqlite/SqliteSorzListRepository.ts";
 import type { Routes } from "../Routes.ts";
@@ -15,6 +14,7 @@ import { AddSorz } from "./sorzs/AddSorz.ts";
 import { Census } from "./sorzs/Census.ts";
 import { InspectSorz } from "./sorzs/InspectSorz.ts";
 import { ListSorzs } from "./sorzs/ListSorzs.ts";
+import { SearchProvidersFactory } from "./sorzs/SearchProvidersFactory.ts";
 import { SearchSorzs } from "./sorzs/SearchSorzs.ts";
 import { AddUser } from "./users/AddUser.ts";
 import { ListUsers } from "./users/ListUsers.ts";
@@ -44,7 +44,9 @@ export class OperationRegistry {
 			protectedBy(new AddSorz(repository, reader)),
 			protectedBy(new InspectSorz(reader)),
 			protectedBy(new ListSorzs(repository)),
-			protectedBy(new SearchSorzs(repository, new GoogleLinkSearch())),
+			protectedBy(
+				new SearchSorzs(repository, new SearchProvidersFactory().build()),
+			),
 			protectedForAdmin(new ListUsers(users)),
 			protectedForAdmin(new AddUser(users)),
 			protectedForAdmin(new SetRole(users)),
