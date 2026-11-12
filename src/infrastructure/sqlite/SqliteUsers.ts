@@ -1,6 +1,4 @@
-import { Database } from "bun:sqlite";
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+import type { Database } from "bun:sqlite";
 import { Password } from "../../domain/user/Password.ts";
 import { RegisteredUser } from "../../domain/user/RegisteredUser.ts";
 import { Role } from "../../domain/user/Role.ts";
@@ -8,38 +6,16 @@ import { Roster } from "../../domain/user/Roster.ts";
 import type { User } from "../../domain/user/User.ts";
 import { Username } from "../../domain/user/Username.ts";
 import type { Users } from "../../domain/user/Users.ts";
-import { UnreadableUsersError } from "./UnreadableUsersError.ts";
 
 type Row = { username: string; hash: string; role: string };
 
 export class SqliteUsers implements Users {
-	private readonly database: Database;
-
-	static inFolder(folder: string, seeded: RegisteredUser[]): SqliteUsers {
-		mkdirSync(folder, { recursive: true });
-		const path = join(folder, "sorzs.db");
-		return new SqliteUsers(path, seeded);
-	}
-
-	constructor(path: string, seeded: RegisteredUser[]) {
-		this.database = SqliteUsers.open(path, seeded);
-	}
-
-	private static open(path: string, seeded: RegisteredUser[]): Database {
-		try {
-			const database = new Database(path);
-			database.run(
-				"CREATE TABLE IF NOT EXISTS users (position INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE, hash TEXT NOT NULL, role TEXT NOT NULL)",
-			);
-			for (const user of seeded) {
-				SqliteUsers.insertIfAbsent(database, user);
-			}
-			return database;
-		} catch (error) {
-			const reason = String(error);
-			throw new UnreadableUsersError(
-				`the saved users at ${path} cannot be read: ${reason}`,
-			);
+	constructor(
+		private readonly database: Database,
+		seeded: RegisteredUser[],
+	) {
+		for (const user of seeded) {
+			SqliteUsers.insertIfAbsent(database, user);
 		}
 	}
 

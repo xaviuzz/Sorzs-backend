@@ -2,6 +2,7 @@ import { beforeAll, expect, test } from "bun:test";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { MigratedDatabaseFactory } from "../src/infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "../src/operations/OperationRegistry.ts";
 import { authEnvironment } from "./AuthEnvironment.ts";
@@ -30,7 +31,7 @@ class SUT {
 		const contract = await OpenApiRoutes.read("openapi.yaml");
 		const dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
 		const registered = OperationRegistry.standard(
-			dataDir,
+			MigratedDatabaseFactory.standard().inFolder(dataDir),
 			AuthSettings.fromEnv(authEnvironment()),
 		).names();
 		return new SUT(contract.names, registered);

@@ -1,3 +1,4 @@
+import type { Database } from "bun:sqlite";
 import { Password } from "../../domain/user/Password.ts";
 import { RegisteredUser } from "../../domain/user/RegisteredUser.ts";
 import { Role } from "../../domain/user/Role.ts";
@@ -24,8 +25,8 @@ export class AuthSettings {
 		return new AuthSettings(secret, seeded);
 	}
 
-	users(dataDir: string): Users {
-		return SqliteUsers.inFolder(dataDir, this.seeded);
+	users(database: Database): Users {
+		return new SqliteUsers(database, this.seeded);
 	}
 
 	signer(): TokenSigner {

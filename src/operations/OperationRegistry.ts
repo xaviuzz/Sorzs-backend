@@ -1,3 +1,4 @@
+import type { Database } from "bun:sqlite";
 import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
 import { SqliteSorzListRepository } from "../infrastructure/sqlite/SqliteSorzListRepository.ts";
 import type { Routes } from "../Routes.ts";
@@ -29,12 +30,12 @@ export class OperationRegistry {
 		}
 	}
 
-	static standard(dataDir: string, auth: AuthSettings): OperationRegistry {
-		const repository = SqliteSorzListRepository.inFolder(dataDir);
+	static standard(database: Database, auth: AuthSettings): OperationRegistry {
+		const repository = new SqliteSorzListRepository(database);
 		const reader = new HttpPageReader();
 		const providers = new SearchProvidersFactory().build();
 		const signer = auth.signer();
-		const users = auth.users(dataDir);
+		const users = auth.users(database);
 		const protectedBy = (handler: OwnedHandler) =>
 			new ProtectedOperation(handler, signer, new AnyUserAccess());
 		const protectedForAdmin = (handler: OwnedHandler) =>

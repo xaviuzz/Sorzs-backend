@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Role } from "../../../src/domain/user/Role.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
+import { MigratedDatabaseFactory } from "../../../src/infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import { AuthSettings } from "../../../src/operations/auth/AuthSettings.ts";
 import { authEnvironment } from "../../AuthEnvironment.ts";
 
@@ -89,19 +90,21 @@ class SUT {
 
 	async makeAdmin(name: string): Promise<void> {
 		await this.settings
-			.users(this.dataDir)
+			.users(MigratedDatabaseFactory.standard().inFolder(this.dataDir))
 			.setRole(Username.from(name), Role.admin());
 	}
 
 	async roleOfAfterRestart(name: string): Promise<string> {
 		const restarted = AuthSettings.fromEnv(authEnvironment());
-		const user = await restarted.users(this.dataDir).find(Username.from(name));
+		const user = await restarted
+			.users(MigratedDatabaseFactory.standard().inFolder(this.dataDir))
+			.find(Username.from(name));
 		return user.role().toString();
 	}
 
 	async acceptsLogin(name: string, password: string): Promise<boolean> {
 		const user = await this.settings
-			.users(this.dataDir)
+			.users(MigratedDatabaseFactory.standard().inFolder(this.dataDir))
 			.find(Username.from(name));
 		const accepted = await user.accepts(password);
 		return accepted;
@@ -109,7 +112,7 @@ class SUT {
 
 	async roleOf(name: string): Promise<string> {
 		const user = await this.settings
-			.users(this.dataDir)
+			.users(MigratedDatabaseFactory.standard().inFolder(this.dataDir))
 			.find(Username.from(name));
 		return user.role().toString();
 	}
