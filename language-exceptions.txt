@@ -1,2 +1,3 @@
-SqliteSorzListRepository.ts
-SqliteSorzListRepository.test.ts
+RenameOldIdentifierKey.ts
+RenameOldIdentifierKey.test.ts
+StandardMigrations.test.ts
