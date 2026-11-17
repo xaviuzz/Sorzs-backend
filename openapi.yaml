@@ -317,7 +317,7 @@ components:
             - $ref: "#/components/schemas/ErrorBody"
     SearchProviderId:
       type: string
-      enum: [reddit, generic]
+      enum: [reddit, wikipedia, generic]
     SorzEntry:
       type: object
       required: [sorzId, name, address, title, favicon, provider]
@@ -452,12 +452,16 @@ components:
           type: string
     SorzsSearchBody:
       type: object
-      required: [results]
+      required: [results, failed]
       properties:
         results:
           type: array
           items:
             $ref: "#/components/schemas/SearchResult"
+        failed:
+          type: array
+          items:
+            type: string
     SorzsSearchReply:
       type: object
       required: [header, body]
