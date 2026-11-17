@@ -1,0 +1,11 @@
+FROM ubuntu:24.04
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends systemd systemd-sysv openssh-server ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /run/sshd /root/.ssh \
+	&& chmod 700 /root/.ssh \
+	&& printf 'Port 2222\nPermitRootLogin prohibit-password\nPasswordAuthentication no\n' > /etc/ssh/sshd_config.d/sorzs.conf \
+	&& systemctl disable ssh.socket \
+	&& systemctl enable ssh.service
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]
