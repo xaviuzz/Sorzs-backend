@@ -39,6 +39,10 @@ export class SorzEntry {
 		return this.sorz.site();
 	}
 
+	hostname(): string {
+		return this.sorz.hostname();
+	}
+
 	toJSON(): EntryJson {
 		const { sorzId, address, title, favicon } = this.sorz.toJSON();
 		const name = this.name.toJSON();

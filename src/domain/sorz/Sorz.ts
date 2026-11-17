@@ -41,6 +41,10 @@ export class Sorz {
 		return this.address.site();
 	}
 
+	hostname(): string {
+		return this.address.hostname();
+	}
+
 	toJSON(): SorzJson {
 		const sorzId = this.id.toString();
 		const address = this.address.toString();

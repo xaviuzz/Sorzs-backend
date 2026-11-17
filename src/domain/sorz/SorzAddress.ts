@@ -37,6 +37,10 @@ export class SorzAddress {
 		return this.web.site();
 	}
 
+	hostname(): string {
+		return this.web.hostname();
+	}
+
 	toString(): string {
 		return this.web.toString();
 	}

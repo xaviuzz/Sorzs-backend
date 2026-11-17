@@ -29,6 +29,10 @@ export class WebAddress {
 		return site;
 	}
 
+	hostname(): string {
+		return new URL(this.text).hostname;
+	}
+
 	equalsIgnoringFinalSlash(other: WebAddress): boolean {
 		const mine = this.withoutFinalSlash();
 		const theirs = other.withoutFinalSlash();
