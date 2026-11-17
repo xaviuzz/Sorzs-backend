@@ -5,7 +5,7 @@ TypeScript API on Bun. Owns the contract, `openapi.yaml`. Part of the Sorzs umbr
 ## Commands
 
 - `bun run test`: `bun test`
-- `bun run lint`: Biome check (lint and format) and the language check (`lint:language`, no word "source" under `src/` and `test/` except files listed in `language-exceptions.txt`); `bunx biome check --write .` fixes
+- `bun run lint`: Biome check (lint and format) and the language check (`lint:language`, no word "source" under `src/` and `test/` except files listed in `language-exceptions.txt`) and the Bun version check (`lint:bun-version`: the `FROM` of the `Dockerfile` holds the version in `.bun-version`, which `ci.yml` and the deploy read); `bunx biome check --write .` fixes
 - `bun run typecheck`: `tsc --noEmit`
 - `bun run build`: `bun build` into `dist/`
 
@@ -18,6 +18,12 @@ A change is done when test, lint, typecheck and build pass.
 The list and the users live in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. On start, `Migrations` brings the file up to the last numbered migration, in `src/infrastructure/sqlite/migrations/` (rules: `.claude/docs/migrations.md`); each row carries its owner, and rows saved before owners existed are given to `xaviuzz` by migration 2. A file that cannot be read, a migration that fails and a file newer than the application each stop the start. A schema change is a new migration at the end of the list with its own test; repositories assume the schema. On start `SEED_USERS` inserts only the usernames the database lacks. Tests that start a server pass a temporary folder; tests that build the registry or the users take their connection from `MigratedDatabaseFactory`, in a temporary folder or in memory.
 
 The server refuses to start without `AUTH_SECRET` (signs tokens), `WIKIPEDIA_CONTACT` (an email or URL; the User-Agent reads `Sorzs (<contact>)`) and `SEED_USERS` (`username:password[:role]` pairs separated by commas; role is `admin` or `user`, default `user`). Development and e2e use `xaviuzz:p1casso:admin,ana:pueblos`; tests take them from `test/ServerEnvironment.ts`. Run it in development with `AUTH_SECRET=dev-secret WIKIPEDIA_CONTACT=dev@example.org SEED_USERS='xaviuzz:p1casso:admin,ana:pueblos' bun run start` (port 3000).
+
+`STATIC_DIR` is optional. When set, the server also serves the files in that folder (the frontend `dist`) and answers any other `GET` that is not an operation URL with its `index.html`; a `GET` to an operation URL still answers 404, and a path that climbs out of the folder answers 404. Without it every URL that is not an operation answers 404. Why: `.claude/decisions/one-bun-serves-front-and-api-deployed-over-ssh.md`.
+
+## Deploy
+
+`make server-up` starts the Ubuntu test server (sshd on 2222, app on 3001, host networking, temporary key under `/tmp`). `make deploy` runs `deploy/deploy.sh` against it with the e2e values and `../frontend/dist`, which you build first. `make server-down` removes both. The real server takes the same `DEPLOY_*` and `APP_PORT` variables plus the three secrets from the caller. Why and limits: `.claude/decisions/one-bun-serves-front-and-api-deployed-over-ssh.md`.
 
 ## Stack
 
