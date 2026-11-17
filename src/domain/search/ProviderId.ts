@@ -1,5 +1,7 @@
+export type ProviderIdValue = "reddit" | "generic";
+
 export class ProviderId {
-	private constructor(private readonly value: "reddit" | "generic") {}
+	private constructor(private readonly value: ProviderIdValue) {}
 
 	static reddit(): ProviderId {
 		return new ProviderId("reddit");
@@ -9,7 +11,7 @@ export class ProviderId {
 		return new ProviderId("generic");
 	}
 
-	toJSON(): "reddit" | "generic" {
+	toJSON(): ProviderIdValue {
 		return this.value;
 	}
 }

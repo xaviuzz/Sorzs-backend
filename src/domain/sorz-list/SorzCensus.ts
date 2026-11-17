@@ -1,10 +1,11 @@
+import type { ProviderIdValue } from "../search/ProviderId.ts";
 import type { SearchProviders } from "../search/SearchProviders.ts";
 import type { SorzList } from "./SorzList.ts";
 
 type CensusLine = {
 	address: string;
 	favicon: string | null;
-	provider: "reddit" | "generic";
+	provider: ProviderIdValue;
 	users: number;
 };
 
