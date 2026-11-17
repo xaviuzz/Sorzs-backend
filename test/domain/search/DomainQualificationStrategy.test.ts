@@ -1,12 +1,6 @@
 import { expect, test } from "bun:test";
 import { DomainQualificationStrategy } from "../../../src/domain/search/DomainQualificationStrategy.ts";
-import { FaviconAddress } from "../../../src/domain/sorz/FaviconAddress.ts";
-import { PageInfo } from "../../../src/domain/sorz/PageInfo.ts";
-import { PageTitle } from "../../../src/domain/sorz/PageTitle.ts";
-import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
-import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
-import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
-import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
+import { entryAt } from "../sorz-list/EntryAt.ts";
 
 test("qualifies a sorz on the domain itself", () => {
 	expect(qualifies("https://reddit.com")).toBe(true);
@@ -35,8 +29,5 @@ test("does not qualify a sorz that only has the domain in its path", () => {
 
 function qualifies(address: string): boolean {
 	const strategy = new DomainQualificationStrategy("reddit.com");
-	const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
-	const sorz = Sorz.register(SorzAddress.from(address), info);
-	const entry = new SorzEntry(sorz, SorzName.fromOptional(""));
-	return strategy.qualifies(entry);
+	return strategy.qualifies(entryAt(address));
 }
