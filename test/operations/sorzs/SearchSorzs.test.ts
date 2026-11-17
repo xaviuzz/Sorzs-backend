@@ -25,7 +25,7 @@ test("answers no results when the list is empty", async () => {
 	expect(sut.status()).toBe(200);
 	const reply = await sut.reply();
 	expect(reply.header).toEqual({ callId: "s-1", status: "ok" });
-	expect(reply.body).toEqual({ results: [] });
+	expect(reply.body).toEqual({ results: [], failed: [] });
 });
 
 test("answers one result per sorz with the name the list shows", async () => {
@@ -43,6 +43,7 @@ test("answers one result per sorz with the name the list shows", async () => {
 				sorz: "Alpha",
 			},
 		],
+		failed: [],
 	});
 });
 
@@ -58,6 +59,34 @@ test("answers in list order even when an earlier sorz answers last", async () =>
 	expect(reply.body).toMatchObject({
 		results: [{ sorz: "Alpha" }, { sorz: "Beta" }, { sorz: "Gamma" }],
 	});
+});
+
+test("reports the sorzs that did not answer and still answers the others in list order", async () => {
+	await sut.addSorz("https://a.com", "Alpha");
+	await sut.addSorz("https://b.com", "Beta");
+	await sut.addSorz("https://c.com", "Gamma");
+	sut.failsFor("b.com");
+
+	await sut.search({ query: "bun" });
+
+	expect(sut.status()).toBe(200);
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({
+		results: [{ sorz: "Alpha" }, { sorz: "Gamma" }],
+		failed: ["Beta"],
+	});
+});
+
+test("reports every sorz that did not answer in list order", async () => {
+	await sut.addSorz("https://a.com", "Alpha");
+	await sut.addSorz("https://b.com", "Beta");
+	sut.failsFor("a.com");
+	sut.failsFor("b.com");
+
+	await sut.search({ query: "bun" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toEqual({ results: [], failed: ["Alpha", "Beta"] });
 });
 
 test("searches every sorz before any of them answers", async () => {
@@ -104,7 +133,7 @@ test("searches only the sorzs of the user who asks", async () => {
 	await sut.search({ query: "bun" });
 
 	const reply = await sut.reply();
-	expect(reply.body).toEqual({ results: [] });
+	expect(reply.body).toEqual({ results: [], failed: [] });
 });
 
 type Reply = { header: Record<string, unknown>; body: unknown };
@@ -113,20 +142,14 @@ class SUT {
 	private readonly repository = new InMemorySorzListRepository();
 	private readonly reader = new FakePageReader();
 	private readonly searching = new FakeSearchProvider();
+	private readonly providers = new SearchProviders([], this.searching);
 	private readonly operation = new JsonOperation(
-		new OwnedBy(
-			xaviuzz,
-			new SearchSorzs(this.repository, new SearchProviders([], this.searching)),
-		),
+		new OwnedBy(xaviuzz, new SearchSorzs(this.repository, this.providers)),
 	);
 	private readonly adding = new JsonOperation(
 		new OwnedBy(
 			xaviuzz,
-			new AddSorz(
-				this.repository,
-				this.reader,
-				new SearchProviders([], this.searching),
-			),
+			new AddSorz(this.repository, this.reader, this.providers),
 		),
 	);
 	private response = new Response();
@@ -137,6 +160,10 @@ class SUT {
 
 	isSlowFor(site: string): void {
 		this.searching.isSlowFor(site);
+	}
+
+	failsFor(site: string): void {
+		this.searching.failsFor(site);
 	}
 
 	answersOnlyWhenTogether(count: number): void {
@@ -155,11 +182,7 @@ class SUT {
 		const operation = new JsonOperation(
 			new OwnedBy(
 				ana,
-				new AddSorz(
-					this.repository,
-					this.reader,
-					new SearchProviders([], this.searching),
-				),
+				new AddSorz(this.repository, this.reader, this.providers),
 			),
 		);
 		await operation.serve(request);

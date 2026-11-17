@@ -1,7 +1,8 @@
 import type { Call } from "../../call/Call.ts";
+import { SearchFailedError } from "../../domain/search/SearchFailedError.ts";
 import type { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import { SearchQuery } from "../../domain/search/SearchQuery.ts";
-import { SearchResults } from "../../domain/search/SearchResults.ts";
+import { SearchReport } from "../../domain/search/SearchReport.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 import type { SorzListRepository } from "../../domain/sorz-list/SorzListRepository.ts";
 import type { Username } from "../../domain/user/Username.ts";
@@ -19,23 +20,36 @@ export class SearchSorzs implements OwnedHandler {
 		const query = SearchQuery.from(call.body.requireText("query"));
 		const list = await this.repository.load(owner);
 		const answers = await this.searchAll(list.entries(), query);
-		const results = this.merge(answers);
-		return { results: results.toJSON() };
+		const report = this.merge(answers);
+		return report.toJSON();
 	}
 
 	private searchAll(
 		entries: SorzEntry[],
 		query: SearchQuery,
-	): Promise<SearchResults[]> {
-		const searches = entries.map((entry) =>
-			this.providers.search(entry, query),
-		);
+	): Promise<SearchReport[]> {
+		const searches = entries.map((entry) => this.searchOne(entry, query));
 		return Promise.all(searches);
 	}
 
-	private merge(answers: SearchResults[]): SearchResults {
-		let results = SearchResults.none();
-		for (const answer of answers) results = results.and(answer);
-		return results;
+	private async searchOne(
+		entry: SorzEntry,
+		query: SearchQuery,
+	): Promise<SearchReport> {
+		let report = SearchReport.none();
+		try {
+			const results = await this.providers.search(entry, query);
+			report = SearchReport.answered(results);
+		} catch (failure) {
+			if (!(failure instanceof SearchFailedError)) throw failure;
+			report = SearchReport.didNotAnswer(entry.displayName());
+		}
+		return report;
+	}
+
+	private merge(answers: SearchReport[]): SearchReport {
+		let report = SearchReport.none();
+		for (const answer of answers) report = report.and(answer);
+		return report;
 	}
 }
