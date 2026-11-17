@@ -7,7 +7,7 @@ import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { InMemorySorzListRepository } from "../../../src/infrastructure/memory/InMemorySorzListRepository.ts";
-import { SearchProvidersFactory } from "../../../src/operations/sorzs/SearchProvidersFactory.ts";
+import { standardProviders } from "../../operations/sorzs/StandardProviders.ts";
 
 let sut: SUT;
 
@@ -120,7 +120,7 @@ test("an address with a trailing slash is a sorz apart", async () => {
 
 class SUT {
 	private readonly repository = new InMemorySorzListRepository();
-	private census = SorzCensus.of([], new SearchProvidersFactory().build());
+	private census = SorzCensus.of([], standardProviders());
 
 	async hold(owner: string, address: string, favicon?: string): Promise<void> {
 		const pageInfo = this.pageInfoWith(favicon);
@@ -131,7 +131,7 @@ class SUT {
 
 	async takeCensus(): Promise<void> {
 		const lists = await this.repository.loadEveryList();
-		this.census = SorzCensus.of(lists, new SearchProvidersFactory().build());
+		this.census = SorzCensus.of(lists, standardProviders());
 	}
 
 	sorzs() {

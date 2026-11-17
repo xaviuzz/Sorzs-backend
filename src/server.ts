@@ -1,13 +1,19 @@
 import { MigratedDatabaseFactory } from "./infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import type { AuthSettings } from "./operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "./operations/OperationRegistry.ts";
+import type { SearchSettings } from "./operations/sorzs/SearchSettings.ts";
 
 export class Server {
 	private constructor(private readonly bunServer: Bun.Server<undefined>) {}
 
-	static start(port: number, dataDir: string, auth: AuthSettings): Server {
+	static start(
+		port: number,
+		dataDir: string,
+		auth: AuthSettings,
+		search: SearchSettings,
+	): Server {
 		const database = MigratedDatabaseFactory.standard().inFolder(dataDir);
-		const operations = OperationRegistry.standard(database, auth);
+		const operations = OperationRegistry.standard(database, auth, search);
 		const bunServer = Bun.serve({
 			port,
 			routes: operations.routes(),

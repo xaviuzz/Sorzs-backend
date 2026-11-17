@@ -17,11 +17,11 @@ A change is done when test, lint, typecheck and build pass.
 
 The list and the users live in `sorzs.db` inside `DATA_DIR`: `/data` in the image, a volume; `./data` in development, which git ignores. On start, `Migrations` brings the file up to the last numbered migration, in `src/infrastructure/sqlite/migrations/` (rules: `.claude/docs/migrations.md`); each row carries its owner, and rows saved before owners existed are given to `xaviuzz` by migration 2. A file that cannot be read, a migration that fails and a file newer than the application each stop the start. A schema change is a new migration at the end of the list with its own test; repositories assume the schema. On start `SEED_USERS` inserts only the usernames the database lacks. Tests that start a server pass a temporary folder; tests that build the registry or the users take their connection from `MigratedDatabaseFactory`, in a temporary folder or in memory.
 
-The server refuses to start without `AUTH_SECRET` (signs tokens) and `SEED_USERS` (`username:password[:role]` pairs separated by commas; role is `admin` or `user`, default `user`). Development and e2e use `xaviuzz:p1casso:admin,ana:pueblos`; tests take them from `test/AuthEnvironment.ts`. Run it in development with `AUTH_SECRET=dev-secret SEED_USERS='xaviuzz:p1casso:admin,ana:pueblos' bun run start` (port 3000).
+The server refuses to start without `AUTH_SECRET` (signs tokens), `WIKIPEDIA_CONTACT` (an email or URL; the User-Agent reads `Sorzs (<contact>)`) and `SEED_USERS` (`username:password[:role]` pairs separated by commas; role is `admin` or `user`, default `user`). Development and e2e use `xaviuzz:p1casso:admin,ana:pueblos`; tests take them from `test/ServerEnvironment.ts`. Run it in development with `AUTH_SECRET=dev-secret WIKIPEDIA_CONTACT=dev@example.org SEED_USERS='xaviuzz:p1casso:admin,ana:pueblos' bun run start` (port 3000).
 
 ## Stack
 
-`Bun.serve` and `bun test`, no framework, no validation library. Biome, TypeScript and `@types/he` are the only dev dependencies; `he` (decodes HTML character references in titles) is the only runtime one. Add nothing else without asking.
+`Bun.serve` and `bun test`, no framework, no validation library. Biome, TypeScript and `@types/he` are the only dev dependencies; `he` (decodes HTML character references in titles and Wikipedia excerpts) is the only runtime one. Add nothing else without asking.
 
 ## Layout
 

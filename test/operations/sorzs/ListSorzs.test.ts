@@ -7,9 +7,9 @@ import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSorz } from "../../../src/operations/sorzs/AddSorz.ts";
 import { ListSorzs } from "../../../src/operations/sorzs/ListSorzs.ts";
-import { SearchProvidersFactory } from "../../../src/operations/sorzs/SearchProvidersFactory.ts";
 import { FakePageReader } from "./FakePageReader.ts";
 import { ana, xaviuzz } from "./Owners.ts";
+import { standardProviders } from "./StandardProviders.ts";
 
 let sut: SUT;
 
@@ -85,6 +85,15 @@ test("lists the provider of each entry", async () => {
 	});
 });
 
+test("lists the wikipedia provider for a language site", async () => {
+	await sut.addSorz("https://es.wikipedia.org", "");
+
+	await sut.list();
+
+	const body = await sut.body();
+	expect(body).toMatchObject({ sorzs: [{ provider: "wikipedia" }] });
+});
+
 test("lists only the entries of the user who asks", async () => {
 	await sut.addSorzAsAna("https://ana.com", "Ana's");
 
@@ -97,19 +106,12 @@ class SUT {
 	private readonly repository = new InMemorySorzListRepository();
 	private readonly reader = new FakePageReader();
 	private readonly operation = new JsonOperation(
-		new OwnedBy(
-			xaviuzz,
-			new ListSorzs(this.repository, new SearchProvidersFactory().build()),
-		),
+		new OwnedBy(xaviuzz, new ListSorzs(this.repository, standardProviders())),
 	);
 	private readonly adding = new JsonOperation(
 		new OwnedBy(
 			xaviuzz,
-			new AddSorz(
-				this.repository,
-				this.reader,
-				new SearchProvidersFactory().build(),
-			),
+			new AddSorz(this.repository, this.reader, standardProviders()),
 		),
 	);
 	private response = new Response();
@@ -138,11 +140,7 @@ class SUT {
 		const operation = new JsonOperation(
 			new OwnedBy(
 				ana,
-				new AddSorz(
-					this.repository,
-					this.reader,
-					new SearchProvidersFactory().build(),
-				),
+				new AddSorz(this.repository, this.reader, standardProviders()),
 			),
 		);
 		this.response = await operation.serve(request);

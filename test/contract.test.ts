@@ -5,8 +5,9 @@ import { join } from "node:path";
 import { MigratedDatabaseFactory } from "../src/infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "../src/operations/OperationRegistry.ts";
-import { authEnvironment } from "./AuthEnvironment.ts";
+import { SearchSettings } from "../src/operations/sorzs/SearchSettings.ts";
 import { OpenApiRoutes } from "./OpenApiRoutes.ts";
+import { serverEnvironment } from "./ServerEnvironment.ts";
 
 let sut: SUT;
 
@@ -32,7 +33,8 @@ class SUT {
 		const dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
 		const registered = OperationRegistry.standard(
 			MigratedDatabaseFactory.standard().inFolder(dataDir),
-			AuthSettings.fromEnv(authEnvironment()),
+			AuthSettings.fromEnv(serverEnvironment()),
+			SearchSettings.fromEnv(serverEnvironment()),
 		).names();
 		return new SUT(contract.names, registered);
 	}

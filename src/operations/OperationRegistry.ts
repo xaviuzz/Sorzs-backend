@@ -15,7 +15,7 @@ import { AddSorz } from "./sorzs/AddSorz.ts";
 import { Census } from "./sorzs/Census.ts";
 import { InspectSorz } from "./sorzs/InspectSorz.ts";
 import { ListSorzs } from "./sorzs/ListSorzs.ts";
-import { SearchProvidersFactory } from "./sorzs/SearchProvidersFactory.ts";
+import type { SearchSettings } from "./sorzs/SearchSettings.ts";
 import { SearchSorzs } from "./sorzs/SearchSorzs.ts";
 import { AddUser } from "./users/AddUser.ts";
 import { ListUsers } from "./users/ListUsers.ts";
@@ -30,10 +30,14 @@ export class OperationRegistry {
 		}
 	}
 
-	static standard(database: Database, auth: AuthSettings): OperationRegistry {
+	static standard(
+		database: Database,
+		auth: AuthSettings,
+		search: SearchSettings,
+	): OperationRegistry {
 		const repository = new SqliteSorzListRepository(database);
 		const reader = new HttpPageReader();
-		const providers = new SearchProvidersFactory().build();
+		const providers = search.providers();
 		const signer = auth.signer();
 		const users = auth.users(database);
 		const protectedBy = (handler: OwnedHandler) =>

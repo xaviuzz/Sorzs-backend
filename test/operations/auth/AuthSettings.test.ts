@@ -6,7 +6,7 @@ import { Role } from "../../../src/domain/user/Role.ts";
 import { Username } from "../../../src/domain/user/Username.ts";
 import { MigratedDatabaseFactory } from "../../../src/infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import { AuthSettings } from "../../../src/operations/auth/AuthSettings.ts";
-import { authEnvironment } from "../../AuthEnvironment.ts";
+import { serverEnvironment } from "../../ServerEnvironment.ts";
 
 let sut: SUT;
 
@@ -81,7 +81,7 @@ test.each([
 });
 
 class SUT {
-	private readonly settings = AuthSettings.fromEnv(authEnvironment());
+	private readonly settings = AuthSettings.fromEnv(serverEnvironment());
 	private readonly dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
 
 	discard(): void {
@@ -95,7 +95,7 @@ class SUT {
 	}
 
 	async roleOfAfterRestart(name: string): Promise<string> {
-		const restarted = AuthSettings.fromEnv(authEnvironment());
+		const restarted = AuthSettings.fromEnv(serverEnvironment());
 		const user = await restarted
 			.users(MigratedDatabaseFactory.standard().inFolder(this.dataDir))
 			.find(Username.from(name));
@@ -124,17 +124,17 @@ class SUT {
 	}
 
 	startWithout(setting: string): AuthSettings {
-		const environment = { ...authEnvironment(), [setting]: undefined };
+		const environment = { ...serverEnvironment(), [setting]: undefined };
 		return AuthSettings.fromEnv(environment);
 	}
 
 	startWithUsers(users: string): AuthSettings {
-		const environment = { ...authEnvironment(), SEED_USERS: users };
+		const environment = { ...serverEnvironment(), SEED_USERS: users };
 		return AuthSettings.fromEnv(environment);
 	}
 
 	startWithEmpty(setting: string): AuthSettings {
-		const environment = { ...authEnvironment(), [setting]: "" };
+		const environment = { ...serverEnvironment(), [setting]: "" };
 		return AuthSettings.fromEnv(environment);
 	}
 }

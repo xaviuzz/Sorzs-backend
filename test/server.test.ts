@@ -3,8 +3,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
+import { SearchSettings } from "../src/operations/sorzs/SearchSettings.ts";
 import { Server } from "../src/server.ts";
-import { authEnvironment } from "./AuthEnvironment.ts";
+import { serverEnvironment } from "./ServerEnvironment.ts";
 
 let sut: SUT;
 
@@ -126,7 +127,8 @@ class SUT {
 	private readonly server = Server.start(
 		0,
 		this.dataDir,
-		AuthSettings.fromEnv(authEnvironment()),
+		AuthSettings.fromEnv(serverEnvironment()),
+		SearchSettings.fromEnv(serverEnvironment()),
 	);
 	private response = new Response();
 	private token = "";

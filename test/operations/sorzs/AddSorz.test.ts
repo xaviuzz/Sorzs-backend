@@ -6,9 +6,9 @@ import { InMemorySorzListRepository } from "../../../src/infrastructure/memory/I
 import { JsonOperation } from "../../../src/operations/JsonOperation.ts";
 import { OwnedBy } from "../../../src/operations/OwnedBy.ts";
 import { AddSorz } from "../../../src/operations/sorzs/AddSorz.ts";
-import { SearchProvidersFactory } from "../../../src/operations/sorzs/SearchProvidersFactory.ts";
 import { FakePageReader } from "./FakePageReader.ts";
 import { ana, xaviuzz } from "./Owners.ts";
+import { standardProviders } from "./StandardProviders.ts";
 
 let sut: SUT;
 
@@ -41,6 +41,13 @@ test("a reddit sorz is answered with the reddit provider", async () => {
 
 	const reply = await sut.reply();
 	expect(reply.body).toMatchObject({ provider: "reddit" });
+});
+
+test("a wikipedia sorz is answered with the wikipedia provider", async () => {
+	await sut.add({ address: "https://es.wikipedia.org", name: "" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({ provider: "wikipedia" });
 });
 
 test("trims the address and the name", async () => {
@@ -175,11 +182,7 @@ class SUT {
 	private readonly operation = new JsonOperation(
 		new OwnedBy(
 			xaviuzz,
-			new AddSorz(
-				this.repository,
-				this.reader,
-				new SearchProvidersFactory().build(),
-			),
+			new AddSorz(this.repository, this.reader, standardProviders()),
 		),
 	);
 	private response = new Response();
@@ -202,11 +205,7 @@ class SUT {
 		const operation = new JsonOperation(
 			new OwnedBy(
 				ana,
-				new AddSorz(
-					this.repository,
-					this.reader,
-					new SearchProvidersFactory().build(),
-				),
+				new AddSorz(this.repository, this.reader, standardProviders()),
 			),
 		);
 		this.response = await operation.serve(request);
