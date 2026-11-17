@@ -1,14 +1,9 @@
 import { beforeEach, expect, test } from "bun:test";
 import { DomainQualificationStrategy } from "../../../src/domain/search/DomainQualificationStrategy.ts";
 import { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
-import { FaviconAddress } from "../../../src/domain/sorz/FaviconAddress.ts";
-import { PageInfo } from "../../../src/domain/sorz/PageInfo.ts";
-import { PageTitle } from "../../../src/domain/sorz/PageTitle.ts";
-import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
-import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
-import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
-import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
+import type { SearchResults } from "../../../src/domain/search/SearchResults.ts";
 import { RedditSearchProvider } from "../../../src/infrastructure/reddit/RedditSearchProvider.ts";
+import { entryAt } from "../../domain/sorz-list/EntryAt.ts";
 
 let sut: SUT;
 
@@ -78,7 +73,7 @@ class SUT {
 	);
 
 	canSearch(address: string): boolean {
-		return this.provider.canSearch(this.entry(address, ""));
+		return this.provider.canSearch(entryAt(address));
 	}
 
 	async search(address: string, query: string) {
@@ -86,14 +81,12 @@ class SUT {
 	}
 
 	async searchNamed(address: string, name: string, query: string) {
-		const entry = this.entry(address, name);
-		const result = await this.provider.search(entry, SearchQuery.from(query));
-		return result.toJSON();
+		const entry = entryAt(address, name);
+		const results = await this.provider.search(entry, SearchQuery.from(query));
+		return this.onlyResult(results);
 	}
 
-	private entry(address: string, name: string): SorzEntry {
-		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
-		const sorz = Sorz.register(SorzAddress.from(address), info);
-		return new SorzEntry(sorz, SorzName.fromOptional(name));
+	private onlyResult(results: SearchResults) {
+		return results.toJSON()[0];
 	}
 }

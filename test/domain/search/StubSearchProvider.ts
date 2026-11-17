@@ -2,6 +2,7 @@ import { ProviderId } from "../../../src/domain/search/ProviderId.ts";
 import type { SearchProvider } from "../../../src/domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
 import { SearchResult } from "../../../src/domain/search/SearchResult.ts";
+import { SearchResults } from "../../../src/domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 
 export class StubSearchProvider implements SearchProvider {
@@ -31,7 +32,13 @@ export class StubSearchProvider implements SearchProvider {
 		return canSearch;
 	}
 
-	async search(entry: SorzEntry, _query: SearchQuery): Promise<SearchResult> {
-		return new SearchResult(this.title, "link", "", entry.displayName());
+	async search(entry: SorzEntry, _query: SearchQuery): Promise<SearchResults> {
+		const result = new SearchResult(
+			this.title,
+			"link",
+			"",
+			entry.displayName(),
+		);
+		return SearchResults.none().with(result);
 	}
 }

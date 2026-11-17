@@ -3,6 +3,7 @@ import type { QualificationStrategy } from "../../domain/search/QualificationStr
 import type { SearchProvider } from "../../domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { SearchResult } from "../../domain/search/SearchResult.ts";
+import { SearchResults } from "../../domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 
 const TITLE = "Search it on Reddit";
@@ -19,12 +20,13 @@ export class RedditSearchProvider implements SearchProvider {
 		return this.qualification.qualifies(entry);
 	}
 
-	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResult> {
+	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResults> {
 		const text = query.toString();
 		const url = this.linkFor(text);
 		const description = `Reddit search for «${text}»`;
 		const sorz = entry.displayName();
-		return new SearchResult(TITLE, url, description, sorz);
+		const result = new SearchResult(TITLE, url, description, sorz);
+		return SearchResults.none().with(result);
 	}
 
 	private linkFor(text: string): string {

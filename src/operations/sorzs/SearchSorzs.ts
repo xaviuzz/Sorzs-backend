@@ -1,7 +1,6 @@
 import type { Call } from "../../call/Call.ts";
 import type { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import { SearchQuery } from "../../domain/search/SearchQuery.ts";
-import type { SearchResult } from "../../domain/search/SearchResult.ts";
 import { SearchResults } from "../../domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 import type { SorzListRepository } from "../../domain/sorz-list/SorzListRepository.ts";
@@ -27,16 +26,16 @@ export class SearchSorzs implements OwnedHandler {
 	private searchAll(
 		entries: SorzEntry[],
 		query: SearchQuery,
-	): Promise<SearchResult[]> {
+	): Promise<SearchResults[]> {
 		const searches = entries.map((entry) =>
 			this.providers.search(entry, query),
 		);
 		return Promise.all(searches);
 	}
 
-	private merge(answers: SearchResult[]): SearchResults {
+	private merge(answers: SearchResults[]): SearchResults {
 		let results = SearchResults.none();
-		for (const answer of answers) results = results.with(answer);
+		for (const answer of answers) results = results.and(answer);
 		return results;
 	}
 }

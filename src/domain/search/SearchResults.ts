@@ -11,6 +11,10 @@ export class SearchResults {
 		return new SearchResults([...this.results, result]);
 	}
 
+	and(other: SearchResults): SearchResults {
+		return new SearchResults([...this.results, ...other.results]);
+	}
+
 	toJSON(): ReturnType<SearchResult["toJSON"]>[] {
 		const json: ReturnType<SearchResult["toJSON"]>[] = [];
 		for (const result of this.results) json.push(result.toJSON());

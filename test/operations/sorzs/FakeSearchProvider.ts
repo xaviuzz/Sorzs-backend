@@ -2,6 +2,7 @@ import { ProviderId } from "../../../src/domain/search/ProviderId.ts";
 import type { SearchProvider } from "../../../src/domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
 import { SearchResult } from "../../../src/domain/search/SearchResult.ts";
+import { SearchResults } from "../../../src/domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
 
 export class FakeSearchProvider implements SearchProvider {
@@ -29,7 +30,7 @@ export class FakeSearchProvider implements SearchProvider {
 		return true;
 	}
 
-	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResult> {
+	async search(entry: SorzEntry, query: SearchQuery): Promise<SearchResults> {
 		this.queries.push(query.toString());
 		if (this.queries.length >= this.expectedTogether) this.release();
 		await this.allStarted;
@@ -41,7 +42,7 @@ export class FakeSearchProvider implements SearchProvider {
 			query.toString(),
 			entry.displayName(),
 		);
-		return result;
+		return SearchResults.none().with(result);
 	}
 
 	searched(): string[] {

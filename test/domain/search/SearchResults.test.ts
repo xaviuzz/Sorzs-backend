@@ -35,6 +35,25 @@ test("adding an answer leaves the earlier results unchanged", () => {
 	expect(before.toJSON()).toEqual([]);
 });
 
+test("results of another answer follow the ones already held", () => {
+	const first = SearchResults.none().with(resultFrom("A"));
+	const second = SearchResults.none().with(resultFrom("B"));
+
+	const both = first.and(second);
+
+	expect(sorzsOf(both)).toEqual(["A", "B"]);
+});
+
+test("joining answers leaves both unchanged", () => {
+	const first = SearchResults.none().with(resultFrom("A"));
+	const second = SearchResults.none().with(resultFrom("B"));
+
+	first.and(second);
+
+	expect(sorzsOf(first)).toEqual(["A"]);
+	expect(sorzsOf(second)).toEqual(["B"]);
+});
+
 function resultFrom(sorz: string): SearchResult {
 	return new SearchResult("Title", "https://a.example", "About", sorz);
 }

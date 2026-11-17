@@ -1,13 +1,7 @@
 import { expect, test } from "bun:test";
 import { SearchProviders } from "../../../src/domain/search/SearchProviders.ts";
 import { SearchQuery } from "../../../src/domain/search/SearchQuery.ts";
-import { FaviconAddress } from "../../../src/domain/sorz/FaviconAddress.ts";
-import { PageInfo } from "../../../src/domain/sorz/PageInfo.ts";
-import { PageTitle } from "../../../src/domain/sorz/PageTitle.ts";
-import { Sorz } from "../../../src/domain/sorz/Sorz.ts";
-import { SorzAddress } from "../../../src/domain/sorz/SorzAddress.ts";
-import { SorzEntry } from "../../../src/domain/sorz-list/SorzEntry.ts";
-import { SorzName } from "../../../src/domain/sorz-list/SorzName.ts";
+import { entryAt } from "../sorz-list/EntryAt.ts";
 import { StubSearchProvider } from "./StubSearchProvider.ts";
 
 test("the first provider that can search the sorz answers", async () => {
@@ -65,19 +59,13 @@ class SUT {
 	private constructor(private readonly providers: SearchProviders) {}
 
 	async titleFor(address: string): Promise<string> {
-		const entry = this.entryAt(address);
-		const result = await this.providers.search(entry, SearchQuery.from("q"));
-		return result.toJSON().title;
+		const entry = entryAt(address);
+		const results = await this.providers.search(entry, SearchQuery.from("q"));
+		return results.toJSON()[0].title;
 	}
 
 	idFor(address: string): string {
-		const entry = this.entryAt(address);
+		const entry = entryAt(address);
 		return this.providers.idFor(entry).toJSON();
-	}
-
-	private entryAt(address: string): SorzEntry {
-		const info = new PageInfo(PageTitle.none(), FaviconAddress.none());
-		const sorz = Sorz.register(SorzAddress.from(address), info);
-		return new SorzEntry(sorz, SorzName.fromOptional(""));
 	}
 }

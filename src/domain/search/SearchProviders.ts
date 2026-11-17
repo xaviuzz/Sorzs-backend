@@ -2,7 +2,7 @@ import type { SorzEntry } from "../sorz-list/SorzEntry.ts";
 import type { ProviderId } from "./ProviderId.ts";
 import type { SearchProvider } from "./SearchProvider.ts";
 import type { SearchQuery } from "./SearchQuery.ts";
-import type { SearchResult } from "./SearchResult.ts";
+import type { SearchResults } from "./SearchResults.ts";
 
 export class SearchProviders {
 	constructor(
@@ -10,7 +10,7 @@ export class SearchProviders {
 		private readonly catchAll: SearchProvider,
 	) {}
 
-	search(entry: SorzEntry, query: SearchQuery): Promise<SearchResult> {
+	search(entry: SorzEntry, query: SearchQuery): Promise<SearchResults> {
 		const provider = this.providerFor(entry);
 		return provider.search(entry, query);
 	}
