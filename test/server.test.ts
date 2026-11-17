@@ -1,19 +1,25 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
+import { StaticSettings } from "../src/operations/settings/StaticSettings.ts";
 import { SearchSettings } from "../src/operations/sorzs/SearchSettings.ts";
 import { Server } from "../src/server.ts";
 import { serverEnvironment } from "./ServerEnvironment.ts";
 
 let sut: SUT;
+let sutServingFiles: SUT;
 
 beforeAll(() => {
 	sut = new SUT();
+	sutServingFiles = SUT.servingFiles();
 });
 
-afterAll(() => sut.stop());
+afterAll(() => {
+	sut.stop();
+	sutServingFiles.stop();
+});
 
 test("POST /health.check answers 200 ok end to end", async () => {
 	await sut.callHealthCheck("e-1");
@@ -122,16 +128,75 @@ test("a GET to an operation URL answers 404", async () => {
 	expect(sut.status()).toBe(404);
 });
 
+test("without STATIC_DIR a GET to an unknown URL answers 404", async () => {
+	await sut.getPath("/anything/at/all");
+
+	expect(sut.status()).toBe(404);
+});
+
+test("a GET of an existing file returns it with its content type", async () => {
+	await sutServingFiles.getPath("/app.js");
+
+	expect(sutServingFiles.status()).toBe(200);
+	expect(sutServingFiles.contentType()).toContain("javascript");
+	expect(await sutServingFiles.text()).toBe("console.log(1);");
+});
+
+test("a GET of an unknown path returns index.html", async () => {
+	await sutServingFiles.getPath("/sorzs/list");
+
+	expect(sutServingFiles.status()).toBe(200);
+	expect(await sutServingFiles.text()).toBe("<html>index</html>");
+});
+
+test("with STATIC_DIR a GET to an operation URL still answers 404", async () => {
+	await sutServingFiles.getPath("/health.check");
+
+	expect(sutServingFiles.status()).toBe(404);
+});
+
+test("with STATIC_DIR a POST to an operation reaches the operation", async () => {
+	await sutServingFiles.callHealthCheck("e-9");
+
+	expect(sutServingFiles.status()).toBe(200);
+});
+
+test("a path that climbs out of the folder does not read outside it", async () => {
+	await sutServingFiles.getPath("/..%2fsecret.txt");
+
+	expect(sutServingFiles.status()).toBe(404);
+	expect(await sutServingFiles.text()).not.toContain("outside");
+});
+
 class SUT {
 	private readonly dataDir = mkdtempSync(join(tmpdir(), "sorzs-"));
-	private readonly server = Server.start(
-		0,
-		this.dataDir,
-		AuthSettings.fromEnv(serverEnvironment()),
-		SearchSettings.fromEnv(serverEnvironment()),
-	);
+	private readonly server: Server;
 	private response = new Response();
 	private token = "";
+
+	constructor(
+		variables = serverEnvironment(),
+		private readonly scratchFolders: string[] = [],
+	) {
+		this.server = Server.start(
+			0,
+			this.dataDir,
+			AuthSettings.fromEnv(variables),
+			SearchSettings.fromEnv(variables),
+			StaticSettings.fromEnv(variables),
+		);
+	}
+
+	static servingFiles(): SUT {
+		const root = mkdtempSync(join(tmpdir(), "sorzs-site-"));
+		const folder = join(root, "site");
+		mkdirSync(folder);
+		writeFileSync(join(folder, "index.html"), "<html>index</html>");
+		writeFileSync(join(folder, "app.js"), "console.log(1);");
+		writeFileSync(join(root, "secret.txt"), "outside");
+		const variables = { ...serverEnvironment(), STATIC_DIR: folder };
+		return new SUT(variables, [root]);
+	}
 
 	async logIn(callId: string): Promise<void> {
 		await this.logInAs(callId, "xaviuzz", "p1casso");
@@ -204,12 +269,24 @@ class SUT {
 		await this.post("nothing.here", "{}");
 	}
 
+	async getPath(path: string): Promise<void> {
+		this.response = await fetch(`${this.server.url}${path.slice(1)}`);
+	}
+
 	async getOperationUrl(): Promise<void> {
 		this.response = await fetch(`${this.server.url}health.check`);
 	}
 
 	status(): number {
 		return this.response.status;
+	}
+
+	contentType(): string {
+		return this.response.headers.get("content-type") ?? "";
+	}
+
+	async text(): Promise<string> {
+		return await this.response.text();
 	}
 
 	async reply(): Promise<unknown> {
@@ -220,6 +297,9 @@ class SUT {
 	stop(): void {
 		this.server.stop();
 		rmSync(this.dataDir, { recursive: true, force: true });
+		for (const folder of this.scratchFolders) {
+			rmSync(folder, { recursive: true, force: true });
+		}
 	}
 
 	private async post(path: string, payload: string): Promise<void> {
