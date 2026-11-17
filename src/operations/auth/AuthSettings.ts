@@ -7,10 +7,11 @@ import { Username } from "../../domain/user/Username.ts";
 import type { Users } from "../../domain/user/Users.ts";
 import { HmacTokenSigner } from "../../infrastructure/crypto/HmacTokenSigner.ts";
 import { SqliteUsers } from "../../infrastructure/sqlite/SqliteUsers.ts";
-import { InvalidSettingError } from "./InvalidSettingError.ts";
-import { MissingSettingError } from "./MissingSettingError.ts";
-
-type Environment = Record<string, string | undefined>;
+import {
+	Environment,
+	type EnvironmentVariables,
+} from "../settings/Environment.ts";
+import { InvalidSettingError } from "../settings/InvalidSettingError.ts";
 
 export class AuthSettings {
 	private constructor(
@@ -18,9 +19,10 @@ export class AuthSettings {
 		private readonly seeded: RegisteredUser[],
 	) {}
 
-	static fromEnv(environment: Environment): AuthSettings {
-		const secret = AuthSettings.require(environment, "AUTH_SECRET");
-		const pairs = AuthSettings.require(environment, "SEED_USERS");
+	static fromEnv(variables: EnvironmentVariables): AuthSettings {
+		const environment = new Environment(variables);
+		const secret = environment.require("AUTH_SECRET");
+		const pairs = environment.require("SEED_USERS");
 		const seeded = AuthSettings.readUsers(pairs);
 		return new AuthSettings(secret, seeded);
 	}
@@ -59,12 +61,5 @@ export class AuthSettings {
 			Password.hashing(password),
 			Role.named(roleText),
 		);
-	}
-
-	private static require(environment: Environment, setting: string): string {
-		const value = environment[setting];
-		if (value === undefined || value === "")
-			throw new MissingSettingError(setting);
-		return value;
 	}
 }
