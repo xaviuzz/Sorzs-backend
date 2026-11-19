@@ -317,7 +317,7 @@ components:
             - $ref: "#/components/schemas/ErrorBody"
     SearchProviderId:
       type: string
-      enum: [reddit, wikipedia, generic]
+      enum: [reddit, wikipedia, geekfeminism, generic]
     SorzEntry:
       type: object
       required: [sorzId, name, address, title, favicon, provider]
