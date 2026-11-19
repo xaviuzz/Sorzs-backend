@@ -6,15 +6,11 @@ import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { SearchResults } from "../../domain/search/SearchResults.ts";
 import { WikipediaSite } from "../../domain/search/WikipediaSite.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
+import type { WebFetch } from "../http/WebFetch.ts";
 import type { Clock } from "./Clock.ts";
 import { RetryAfter } from "./RetryAfter.ts";
 import { SlowDowns } from "./SlowDowns.ts";
 import { WikipediaPage, type WikipediaPageJson } from "./WikipediaPage.ts";
-
-export type WikipediaFetch = (
-	url: string,
-	init: RequestInit,
-) => Promise<Response>;
 
 const PAGES_PER_SORZ = 10;
 const TIMEOUT_MS = 3000;
@@ -25,7 +21,7 @@ export class WikipediaSearchProvider implements SearchProvider {
 
 	constructor(
 		private readonly qualification: QualificationStrategy,
-		private readonly fetchPage: WikipediaFetch,
+		private readonly fetchPage: WebFetch,
 		private readonly contact: string,
 		clock: Clock,
 	) {

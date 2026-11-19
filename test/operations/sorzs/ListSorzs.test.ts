@@ -94,6 +94,15 @@ test("lists the wikipedia provider for a language site", async () => {
 	expect(body).toMatchObject({ sorzs: [{ provider: "wikipedia" }] });
 });
 
+test("lists the geekfeminism provider for its wiki", async () => {
+	await sut.addSorz("https://geekfeminism.fandom.com", "");
+
+	await sut.list();
+
+	const body = await sut.body();
+	expect(body).toMatchObject({ sorzs: [{ provider: "geekfeminism" }] });
+});
+
 test("lists only the entries of the user who asks", async () => {
 	await sut.addSorzAsAna("https://ana.com", "Ana's");
 

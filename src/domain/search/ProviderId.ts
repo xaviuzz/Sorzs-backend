@@ -1,4 +1,8 @@
-export type ProviderIdValue = "reddit" | "wikipedia" | "generic";
+export type ProviderIdValue =
+	| "reddit"
+	| "wikipedia"
+	| "geekfeminism"
+	| "generic";
 
 export class ProviderId {
 	private constructor(private readonly value: ProviderIdValue) {}
@@ -9,6 +13,10 @@ export class ProviderId {
 
 	static wikipedia(): ProviderId {
 		return new ProviderId("wikipedia");
+	}
+
+	static geekfeminism(): ProviderId {
+		return new ProviderId("geekfeminism");
 	}
 
 	static generic(): ProviderId {

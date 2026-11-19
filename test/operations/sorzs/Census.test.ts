@@ -74,6 +74,17 @@ test("answers the wikipedia provider for a language site", async () => {
 	});
 });
 
+test("answers the geekfeminism provider for its wiki and generic for another fandom wiki", async () => {
+	await hold("xaviuzz", "https://geekfeminism.fandom.com");
+	await hold("xaviuzz", "https://starwars.fandom.com");
+
+	await sut.send();
+
+	expect(await sut.body()).toMatchObject({
+		sorzs: [{ provider: "geekfeminism" }, { provider: "generic" }],
+	});
+});
+
 async function hold(owner: string, address: string): Promise<void> {
 	const sorz = Sorz.register(SorzAddress.from(address), PageInfo.none());
 	const entry = new SorzEntry(sorz, SorzName.none());

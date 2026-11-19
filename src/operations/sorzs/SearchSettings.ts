@@ -6,7 +6,7 @@ import {
 import { SearchProvidersFactory } from "./SearchProvidersFactory.ts";
 
 export class SearchSettings {
-	private constructor(private readonly wikipediaContact: string) {}
+	private constructor(private readonly contact: string) {}
 
 	static fromEnv(variables: EnvironmentVariables): SearchSettings {
 		const environment = new Environment(variables);
@@ -15,6 +15,6 @@ export class SearchSettings {
 	}
 
 	providers(): SearchProviders {
-		return new SearchProvidersFactory(this.wikipediaContact).build();
+		return new SearchProvidersFactory(this.contact).build();
 	}
 }

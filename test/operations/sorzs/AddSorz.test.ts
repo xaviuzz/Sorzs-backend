@@ -50,6 +50,13 @@ test("a wikipedia sorz is answered with the wikipedia provider", async () => {
 	expect(reply.body).toMatchObject({ provider: "wikipedia" });
 });
 
+test("a geek feminism sorz is answered with the geekfeminism provider", async () => {
+	await sut.add({ address: "https://geekfeminism.fandom.com", name: "" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({ provider: "geekfeminism" });
+});
+
 test("trims the address and the name", async () => {
 	await sut.add({ address: "  https://example.com  ", name: "  Example  " });
 

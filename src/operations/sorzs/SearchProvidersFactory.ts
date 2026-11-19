@@ -1,20 +1,19 @@
 import { DomainQualificationStrategy } from "../../domain/search/DomainQualificationStrategy.ts";
 import { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import { WikipediaQualificationStrategy } from "../../domain/search/WikipediaQualificationStrategy.ts";
+import { GeekFeminismSearchProvider } from "../../infrastructure/geekfeminism/GeekFeminismSearchProvider.ts";
 import { GenericSearchProvider } from "../../infrastructure/google/GenericSearchProvider.ts";
+import type { WebFetch } from "../../infrastructure/http/WebFetch.ts";
 import { RedditSearchProvider } from "../../infrastructure/reddit/RedditSearchProvider.ts";
 import { SystemClock } from "../../infrastructure/wikipedia/SystemClock.ts";
-import {
-	type WikipediaFetch,
-	WikipediaSearchProvider,
-} from "../../infrastructure/wikipedia/WikipediaSearchProvider.ts";
+import { WikipediaSearchProvider } from "../../infrastructure/wikipedia/WikipediaSearchProvider.ts";
 
-const WEB_FETCH: WikipediaFetch = (url, init) => fetch(url, init);
+const WEB_FETCH: WebFetch = (url, init) => fetch(url, init);
 
 export class SearchProvidersFactory {
 	constructor(
-		private readonly wikipediaContact: string,
-		private readonly wikipediaFetch: WikipediaFetch = WEB_FETCH,
+		private readonly contact: string,
+		private readonly webFetch: WebFetch = WEB_FETCH,
 	) {}
 
 	build(): SearchProviders {
@@ -22,9 +21,14 @@ export class SearchProvidersFactory {
 			new RedditSearchProvider(new DomainQualificationStrategy("reddit.com")),
 			new WikipediaSearchProvider(
 				new WikipediaQualificationStrategy(),
-				this.wikipediaFetch,
-				this.wikipediaContact,
+				this.webFetch,
+				this.contact,
 				new SystemClock(),
+			),
+			new GeekFeminismSearchProvider(
+				new DomainQualificationStrategy("geekfeminism.fandom.com"),
+				this.webFetch,
+				this.contact,
 			),
 		];
 		const catchAll = new GenericSearchProvider();

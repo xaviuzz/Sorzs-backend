@@ -31,6 +31,35 @@ test("a wikipedia sorz is searched on Wikipedia and never on Google", async () =
 	expect(titles).toEqual(["Ciberpunk", "Neuromante"]);
 });
 
+test("a geek feminism sorz is searched on its wiki and never on Google", async () => {
+	await sut.addSorz("https://geekfeminism.fandom.com");
+
+	const titles = await sut.titlesOfSearch("adacamp");
+
+	expect(titles).toEqual(["AdaCamp"]);
+});
+
+test("another fandom wiki stays on the generic provider", async () => {
+	await sut.addSorz("https://starwars.fandom.com");
+
+	const titles = await sut.titlesOfSearch("adacamp");
+
+	expect(titles).toEqual(["Search it on Google"]);
+});
+
+test("a sorz that the Geek Feminism wiki does not answer is reported and the others still answer", async () => {
+	await sut.addSorz("https://geekfeminism.fandom.com");
+	await sut.addSorz("https://example.com");
+	sut.geekFeminismIsDown();
+
+	const reply = await sut.searchReply("adacamp");
+
+	expect(reply.body).toEqual({
+		results: [expect.objectContaining({ title: "Search it on Google" })],
+		failed: ["https://geekfeminism.fandom.com"],
+	});
+});
+
 test("the results keep the order of the list", async () => {
 	await sut.addSorz("https://www.reddit.com/r/spain");
 	await sut.addSorz("https://es.wikipedia.org");
@@ -73,9 +102,10 @@ class SUT {
 	private readonly repository = new InMemorySorzListRepository();
 	private readonly userAgents: string[] = [];
 	private wikipediaAnswers = true;
+	private geekFeminismAnswers = true;
 	private readonly providers = new SearchProvidersFactory(
 		"contact@example.org",
-		async (_url, init) => this.wikipedia(init),
+		async (url, init) => this.web(url, init),
 	).build();
 	private readonly adding = new JsonOperation(
 		new OwnedBy(
@@ -86,6 +116,10 @@ class SUT {
 	private readonly searching = new JsonOperation(
 		new OwnedBy(xaviuzz, new SearchSorzs(this.repository, this.providers)),
 	);
+
+	geekFeminismIsDown(): void {
+		this.geekFeminismAnswers = false;
+	}
 
 	wikipediaIsDown(): void {
 		this.wikipediaAnswers = false;
@@ -113,7 +147,21 @@ class SUT {
 		return (await response.json()) as SearchReply;
 	}
 
-	private async wikipedia(init: RequestInit): Promise<Response> {
+	private async web(url: string, init: RequestInit): Promise<Response> {
+		const hostname = new URL(url).hostname;
+		let answer = new Response("", { status: 404 });
+		if (hostname.endsWith(".wikipedia.org")) answer = this.wikipedia(init);
+		if (hostname === "geekfeminism.fandom.com") answer = this.geekFeminism();
+		return answer;
+	}
+
+	private geekFeminism(): Response {
+		let answer = Response.json({ query: { search: [{ title: "AdaCamp" }] } });
+		if (!this.geekFeminismAnswers) answer = new Response("", { status: 503 });
+		return answer;
+	}
+
+	private wikipedia(init: RequestInit): Response {
 		this.userAgents.push(new Headers(init.headers).get("User-Agent") ?? "");
 		let answer = Response.json({
 			pages: [
