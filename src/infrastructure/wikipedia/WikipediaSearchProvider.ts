@@ -5,6 +5,7 @@ import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { SearchResults } from "../../domain/search/SearchResults.ts";
 import { WikipediaSite } from "../../domain/search/WikipediaSite.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
+import { ApiRequest } from "../http/ApiRequest.ts";
 import type { WebFetch } from "../http/WebFetch.ts";
 import type { Clock } from "./Clock.ts";
 import { WikipediaPage } from "./WikipediaPage.ts";
@@ -20,7 +21,7 @@ export class WikipediaSearchProvider implements SearchProvider {
 		contact: string,
 		clock: Clock,
 	) {
-		const request = new WikipediaRequest(contact);
+		const request = new WikipediaRequest(new ApiRequest(contact));
 		this.wikipediaPages = new WikipediaPages(request, fetchPage, clock);
 	}
 
