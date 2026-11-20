@@ -1,25 +1,33 @@
 import { ProviderId } from "../../domain/search/ProviderId.ts";
 import type { QualificationStrategy } from "../../domain/search/QualificationStrategy.ts";
-import { SearchFailedError } from "../../domain/search/SearchFailedError.ts";
 import type { SearchProvider } from "../../domain/search/SearchProvider.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { SearchResults } from "../../domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
+import { ApiReply } from "../http/ApiReply.ts";
+import { ApiRequest } from "../http/ApiRequest.ts";
+import { SearchAttempt } from "../http/SearchAttempt.ts";
 import type { WebFetch } from "../http/WebFetch.ts";
 import {
 	GeekFeminismPage,
 	type GeekFeminismPageJson,
 } from "./GeekFeminismPage.ts";
 
-const PAGES_PER_SORZ = 10;
-const TIMEOUT_MS = 3000;
+function pagesOf(body: { query: { search: GeekFeminismPageJson[] } }): unknown {
+	return body.query.search;
+}
 
 export class GeekFeminismSearchProvider implements SearchProvider {
+	private readonly api: ApiRequest;
+	private readonly attempt = new SearchAttempt();
+
 	constructor(
 		private readonly qualification: QualificationStrategy,
 		private readonly fetchPage: WebFetch,
-		private readonly contact: string,
-	) {}
+		contact: string,
+	) {
+		this.api = new ApiRequest(contact);
+	}
 
 	id(): ProviderId {
 		return ProviderId.geekfeminism();
@@ -43,40 +51,23 @@ export class GeekFeminismSearchProvider implements SearchProvider {
 		hostname: string,
 		query: SearchQuery,
 	): Promise<GeekFeminismPageJson[]> {
-		let pages: GeekFeminismPageJson[] = [];
-		try {
-			pages = await this.readPages(hostname, query);
-		} catch (_failure) {
-			throw new SearchFailedError();
-		}
-		return pages;
+		const read = () => this.readPages(hostname, query);
+		return this.attempt.run(read);
 	}
 
 	private async readPages(
 		hostname: string,
 		query: SearchQuery,
 	): Promise<GeekFeminismPageJson[]> {
-		const response = await this.fetchPage(
-			this.searchUrl(hostname, query),
-			this.requestInit(),
-		);
-		if (!response.ok) throw new SearchFailedError();
-		const body = (await response.json()) as {
-			query: { search: GeekFeminismPageJson[] };
-		};
-		if (!Array.isArray(body.query.search)) throw new SearchFailedError();
-		return body.query.search;
+		const url = this.searchUrl(hostname, query);
+		const response = await this.fetchPage(url, this.api.init());
+		return new ApiReply(response).items<GeekFeminismPageJson>(pagesOf);
 	}
 
 	private searchUrl(hostname: string, query: SearchQuery): string {
 		const term = encodeURIComponent(query.toString());
-		const parameters = `action=query&list=search&srsearch=${term}&srlimit=${PAGES_PER_SORZ}&format=json`;
+		const limit = this.api.pagesLimit();
+		const parameters = `action=query&list=search&srsearch=${term}&srlimit=${limit}&format=json`;
 		return `https://${hostname}/api.php?${parameters}`;
-	}
-
-	private requestInit(): RequestInit {
-		const headers = { "User-Agent": `Sorzs (${this.contact})` };
-		const signal = AbortSignal.timeout(TIMEOUT_MS);
-		return { headers, signal };
 	}
 }

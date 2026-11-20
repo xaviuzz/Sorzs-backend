@@ -1,5 +1,7 @@
 import { SearchFailedError } from "../../domain/search/SearchFailedError.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
+import { ApiReply } from "../http/ApiReply.ts";
+import { SearchAttempt } from "../http/SearchAttempt.ts";
 import type { WebFetch } from "../http/WebFetch.ts";
 import type { Clock } from "./Clock.ts";
 import { RetryAfter } from "./RetryAfter.ts";
@@ -9,8 +11,13 @@ import type { WikipediaRequest } from "./WikipediaRequest.ts";
 
 const TOO_MANY_REQUESTS = 429;
 
+function pagesOf(body: { pages: WikipediaPageJson[] }): unknown {
+	return body.pages;
+}
+
 export class WikipediaPages {
 	private readonly slowDowns: SlowDowns;
+	private readonly attempt = new SearchAttempt();
 
 	constructor(
 		private readonly request: WikipediaRequest,
@@ -24,13 +31,8 @@ export class WikipediaPages {
 		language: string,
 		query: SearchQuery,
 	): Promise<WikipediaPageJson[]> {
-		let pages: WikipediaPageJson[] = [];
-		try {
-			pages = await this.readPages(language, query);
-		} catch (_failure) {
-			throw new SearchFailedError();
-		}
-		return pages;
+		const read = () => this.readPages(language, query);
+		return this.attempt.run(read);
 	}
 
 	private async readPages(
@@ -42,10 +44,7 @@ export class WikipediaPages {
 		const init = this.request.init();
 		const response = await this.fetchPage(url, init);
 		this.noteSlowDown(language, response);
-		this.requireSuccess(response);
-		const body = (await response.json()) as { pages: WikipediaPageJson[] };
-		this.requirePages(body.pages);
-		return body.pages;
+		return new ApiReply(response).items<WikipediaPageJson>(pagesOf);
 	}
 
 	private requireNotSlowedDown(language: string): void {
@@ -56,13 +55,5 @@ export class WikipediaPages {
 		const isAskedToSlowDown = response.status === TOO_MANY_REQUESTS;
 		const retryAfter = RetryAfter.from(response.headers.get("Retry-After"));
 		if (isAskedToSlowDown) this.slowDowns.startFor(language, retryAfter);
-	}
-
-	private requireSuccess(response: Response): void {
-		if (!response.ok) throw new SearchFailedError();
-	}
-
-	private requirePages(pages: unknown): void {
-		if (!Array.isArray(pages)) throw new SearchFailedError();
 	}
 }
