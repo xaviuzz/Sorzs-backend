@@ -11,8 +11,4 @@ export class WikipediaRequest {
 		const url = `${site}/w/rest.php/v1/search/page?q=${term}&limit=${limit}`;
 		return url;
 	}
-
-	init(): RequestInit {
-		return this.api.init();
-	}
 }

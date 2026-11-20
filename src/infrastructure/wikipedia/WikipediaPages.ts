@@ -1,6 +1,7 @@
 import { SearchFailedError } from "../../domain/search/SearchFailedError.ts";
 import type { SearchQuery } from "../../domain/search/SearchQuery.ts";
 import { ApiReply } from "../http/ApiReply.ts";
+import type { ApiRequest } from "../http/ApiRequest.ts";
 import { SearchAttempt } from "../http/SearchAttempt.ts";
 import type { WebFetch } from "../http/WebFetch.ts";
 import type { Clock } from "./Clock.ts";
@@ -21,6 +22,7 @@ export class WikipediaPages {
 
 	constructor(
 		private readonly request: WikipediaRequest,
+		private readonly api: ApiRequest,
 		private readonly fetchPage: WebFetch,
 		clock: Clock,
 	) {
@@ -41,7 +43,7 @@ export class WikipediaPages {
 	): Promise<WikipediaPageJson[]> {
 		this.requireNotSlowedDown(language);
 		const url = this.request.url(language, query);
-		const init = this.request.init();
+		const init = this.api.init();
 		const response = await this.fetchPage(url, init);
 		this.noteSlowDown(language, response);
 		return new ApiReply(response).items<WikipediaPageJson>(pagesOf);

@@ -21,8 +21,9 @@ export class WikipediaSearchProvider implements SearchProvider {
 		contact: string,
 		clock: Clock,
 	) {
-		const request = new WikipediaRequest(new ApiRequest(contact));
-		this.wikipediaPages = new WikipediaPages(request, fetchPage, clock);
+		const api = new ApiRequest(contact);
+		const request = new WikipediaRequest(api);
+		this.wikipediaPages = new WikipediaPages(request, api, fetchPage, clock);
 	}
 
 	id(): ProviderId {
