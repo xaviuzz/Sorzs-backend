@@ -6,12 +6,15 @@ import { SearchResults } from "../../domain/search/SearchResults.ts";
 import type { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 import { ApiRequest } from "../http/ApiRequest.ts";
 import type { WebFetch } from "../http/WebFetch.ts";
-import { GeekFeminismPage } from "./GeekFeminismPage.ts";
-import { GeekFeminismPages } from "./GeekFeminismPages.ts";
-import { GeekFeminismRequest } from "./GeekFeminismRequest.ts";
+import { MediaWikiPage } from "../mediawiki/MediaWikiPage.ts";
+import { MediaWikiPages } from "../mediawiki/MediaWikiPages.ts";
+import { MediaWikiRequest } from "../mediawiki/MediaWikiRequest.ts";
+
+const API_PATH = "/api.php";
+const ARTICLE_BASE = "https://geekfeminism.fandom.com/wiki/";
 
 export class GeekFeminismSearchProvider implements SearchProvider {
-	private readonly geekFeminismPages: GeekFeminismPages;
+	private readonly geekFeminismPages: MediaWikiPages;
 
 	constructor(
 		private readonly qualification: QualificationStrategy,
@@ -19,12 +22,16 @@ export class GeekFeminismSearchProvider implements SearchProvider {
 		contact: string,
 	) {
 		const api = new ApiRequest(contact);
-		const request = new GeekFeminismRequest(api);
-		this.geekFeminismPages = new GeekFeminismPages(request, api, fetchPage);
+		const request = new MediaWikiRequest(api, API_PATH);
+		this.geekFeminismPages = new MediaWikiPages(request, api, fetchPage);
 	}
 
 	id(): ProviderId {
 		return ProviderId.geekfeminism();
+	}
+
+	name(): string {
+		return "Geek Feminism";
 	}
 
 	canSearch(entry: SorzEntry): boolean {
@@ -36,7 +43,9 @@ export class GeekFeminismSearchProvider implements SearchProvider {
 		const sorz = entry.displayName();
 		let results = SearchResults.none();
 		for (const page of pages) {
-			results = results.with(new GeekFeminismPage(page).toResult(sorz));
+			results = results.with(
+				new MediaWikiPage(page, ARTICLE_BASE).toResult(sorz),
+			);
 		}
 		return results;
 	}

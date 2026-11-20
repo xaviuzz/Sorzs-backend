@@ -1,5 +1,5 @@
-import { decode } from "he";
 import { SearchResult } from "../../domain/search/SearchResult.ts";
+import { SearchExcerpt } from "../http/SearchExcerpt.ts";
 
 export type WikipediaPageJson = {
 	title: string;
@@ -7,8 +7,6 @@ export type WikipediaPageJson = {
 	description: string | null;
 	excerpt: string;
 };
-
-const TAG = /<[^>]*>/g;
 
 export class WikipediaPage {
 	constructor(private readonly json: WikipediaPageJson) {}
@@ -37,8 +35,8 @@ export class WikipediaPage {
 	}
 
 	private plainExcerpt(): string {
-		const withoutTags = this.json.excerpt.replace(TAG, "");
-		const plain = decode(withoutTags);
+		const excerpt = new SearchExcerpt(this.json.excerpt);
+		const plain = excerpt.plainText();
 		return plain;
 	}
 }

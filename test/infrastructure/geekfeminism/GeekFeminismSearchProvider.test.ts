@@ -202,7 +202,11 @@ class SUT {
 	private async answer(url: string, init: RequestInit): Promise<Response> {
 		this.requests.push({ url, init });
 		if (this.reply) return this.reply();
-		const search = this.titles.map((title) => ({ title, pageid: 1 }));
+		const search = this.titles.map((title) => ({
+			title,
+			pageid: 1,
+			snippet: "",
+		}));
 		return Response.json({ query: { search } });
 	}
 }
