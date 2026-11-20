@@ -82,6 +82,7 @@ test("the admin sees the sorzs of every list with their users over HTTP", async 
 					address: "https://common.example.com",
 					favicon: null,
 					provider: "generic",
+					providerName: "Generic",
 					users: 2,
 				},
 			]),

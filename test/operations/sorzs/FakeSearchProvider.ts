@@ -32,6 +32,10 @@ export class FakeSearchProvider implements SearchProvider {
 		return ProviderId.generic();
 	}
 
+	name(): string {
+		return "Generic";
+	}
+
 	canSearch(): boolean {
 		return true;
 	}

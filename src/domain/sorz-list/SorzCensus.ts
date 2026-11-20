@@ -6,6 +6,7 @@ type CensusLine = {
 	address: string;
 	favicon: string | null;
 	provider: ProviderIdValue;
+	providerName: string;
 	users: number;
 };
 
@@ -33,11 +34,16 @@ export class SorzCensus {
 	): void {
 		for (const entry of list.entries()) {
 			const { address, favicon } = entry.toJSON();
-			const provider = providers.idFor(entry).toJSON();
+			const description = providers.describedFor(entry).toJSON();
 			const known = linesByAddress.get(address);
 			if (known) known.users += 1;
 			if (!known)
-				linesByAddress.set(address, { address, favicon, provider, users: 1 });
+				linesByAddress.set(address, {
+					address,
+					favicon,
+					...description,
+					users: 1,
+				});
 		}
 	}
 

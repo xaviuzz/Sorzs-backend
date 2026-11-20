@@ -16,6 +16,10 @@ export class RedditSearchProvider implements SearchProvider {
 		return ProviderId.reddit();
 	}
 
+	name(): string {
+		return "Reddit";
+	}
+
 	canSearch(entry: SorzEntry): boolean {
 		return this.qualification.qualifies(entry);
 	}

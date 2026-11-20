@@ -1,5 +1,5 @@
 import type { SorzEntry } from "../sorz-list/SorzEntry.ts";
-import type { ProviderId } from "./ProviderId.ts";
+import { ProviderDescription } from "./ProviderDescription.ts";
 import type { SearchProvider } from "./SearchProvider.ts";
 import type { SearchQuery } from "./SearchQuery.ts";
 import type { SearchResults } from "./SearchResults.ts";
@@ -15,9 +15,9 @@ export class SearchProviders {
 		return provider.search(entry, query);
 	}
 
-	idFor(entry: SorzEntry): ProviderId {
+	describedFor(entry: SorzEntry): ProviderDescription {
 		const provider = this.providerFor(entry);
-		return provider.id();
+		return new ProviderDescription(provider.id(), provider.name());
 	}
 
 	private providerFor(entry: SorzEntry): SearchProvider {

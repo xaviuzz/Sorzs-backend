@@ -33,6 +33,7 @@ test("adds a sorz and answers the created entry", async () => {
 		title: null,
 		favicon: null,
 		provider: "generic",
+		providerName: "Generic",
 	});
 });
 
@@ -40,21 +41,40 @@ test("a reddit sorz is answered with the reddit provider", async () => {
 	await sut.add({ address: "https://www.reddit.com/r/spain", name: "" });
 
 	const reply = await sut.reply();
-	expect(reply.body).toMatchObject({ provider: "reddit" });
+	expect(reply.body).toMatchObject({
+		provider: "reddit",
+		providerName: "Reddit",
+	});
 });
 
 test("a wikipedia sorz is answered with the wikipedia provider", async () => {
 	await sut.add({ address: "https://es.wikipedia.org", name: "" });
 
 	const reply = await sut.reply();
-	expect(reply.body).toMatchObject({ provider: "wikipedia" });
+	expect(reply.body).toMatchObject({
+		provider: "wikipedia",
+		providerName: "Wikipedia",
+	});
 });
 
 test("a geek feminism sorz is answered with the geekfeminism provider", async () => {
 	await sut.add({ address: "https://geekfeminism.fandom.com", name: "" });
 
 	const reply = await sut.reply();
-	expect(reply.body).toMatchObject({ provider: "geekfeminism" });
+	expect(reply.body).toMatchObject({
+		provider: "geekfeminism",
+		providerName: "Geek Feminism",
+	});
+});
+
+test("an appropedia sorz is answered with the appropedia provider", async () => {
+	await sut.add({ address: "https://www.appropedia.org", name: "" });
+
+	const reply = await sut.reply();
+	expect(reply.body).toMatchObject({
+		provider: "appropedia",
+		providerName: "Appropedia",
+	});
 });
 
 test("trims the address and the name", async () => {

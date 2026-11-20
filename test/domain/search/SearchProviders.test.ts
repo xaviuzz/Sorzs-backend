@@ -66,6 +66,6 @@ class SUT {
 
 	idFor(address: string): string {
 		const entry = entryAt(address);
-		return this.providers.idFor(entry).toJSON();
+		return this.providers.describedFor(entry).toJSON().provider;
 	}
 }

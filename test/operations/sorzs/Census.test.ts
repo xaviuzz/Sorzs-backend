@@ -41,12 +41,14 @@ test("answers every sorz held, ordered by address, with its users", async () => 
 				address: "https://a.example.com",
 				favicon: null,
 				provider: "generic",
+				providerName: "Generic",
 				users: 1,
 			},
 			{
 				address: "https://b.example.com",
 				favicon: null,
 				provider: "generic",
+				providerName: "Generic",
 				users: 2,
 			},
 		],
@@ -60,7 +62,10 @@ test("answers the provider that searches each sorz", async () => {
 	await sut.send();
 
 	expect(await sut.body()).toMatchObject({
-		sorzs: [{ provider: "generic" }, { provider: "reddit" }],
+		sorzs: [
+			{ provider: "generic", providerName: "Generic" },
+			{ provider: "reddit", providerName: "Reddit" },
+		],
 	});
 });
 
@@ -70,7 +75,7 @@ test("answers the wikipedia provider for a language site", async () => {
 	await sut.send();
 
 	expect(await sut.body()).toMatchObject({
-		sorzs: [{ provider: "wikipedia" }],
+		sorzs: [{ provider: "wikipedia", providerName: "Wikipedia" }],
 	});
 });
 
@@ -81,7 +86,20 @@ test("answers the geekfeminism provider for its wiki and generic for another fan
 	await sut.send();
 
 	expect(await sut.body()).toMatchObject({
-		sorzs: [{ provider: "geekfeminism" }, { provider: "generic" }],
+		sorzs: [
+			{ provider: "geekfeminism", providerName: "Geek Feminism" },
+			{ provider: "generic", providerName: "Generic" },
+		],
+	});
+});
+
+test("answers the appropedia provider for its wiki", async () => {
+	await hold("xaviuzz", "https://www.appropedia.org");
+
+	await sut.send();
+
+	expect(await sut.body()).toMatchObject({
+		sorzs: [{ provider: "appropedia", providerName: "Appropedia" }],
 	});
 });
 

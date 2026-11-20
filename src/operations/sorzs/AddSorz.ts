@@ -24,7 +24,7 @@ export class AddSorz implements OwnedHandler {
 		const list = await this.repository.load(owner);
 		const entry = list.add(Sorz.register(address, info), name);
 		await this.repository.add(owner, entry);
-		const provider = this.providers.idFor(entry).toJSON();
-		return { ...entry.toJSON(), provider };
+		const description = this.providers.describedFor(entry).toJSON();
+		return { ...entry.toJSON(), ...description };
 	}
 }

@@ -31,6 +31,7 @@ test("a sorz held by one user counts one user", async () => {
 			address: "https://example.com",
 			favicon: null,
 			provider: "generic",
+			providerName: "Generic",
 			users: 1,
 		},
 	]);
@@ -47,6 +48,7 @@ test("a sorz held by two users counts two users", async () => {
 			address: "https://example.com",
 			favicon: null,
 			provider: "generic",
+			providerName: "Generic",
 			users: 2,
 		},
 	]);
@@ -75,6 +77,7 @@ test("the sorz brings its favicon", async () => {
 			address: "https://example.com",
 			favicon: "https://example.com/i.png",
 			provider: "generic",
+			providerName: "Generic",
 			users: 1,
 		},
 	]);

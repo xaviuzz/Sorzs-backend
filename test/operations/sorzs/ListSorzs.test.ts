@@ -44,6 +44,7 @@ test("lists the entries in order of addition", async () => {
 				title: null,
 				favicon: null,
 				provider: "generic",
+				providerName: "Generic",
 			},
 			{
 				sorzId: expect.any(String),
@@ -52,6 +53,7 @@ test("lists the entries in order of addition", async () => {
 				title: null,
 				favicon: null,
 				provider: "generic",
+				providerName: "Generic",
 			},
 		],
 	});
@@ -81,7 +83,10 @@ test("lists the provider of each entry", async () => {
 
 	const body = await sut.body();
 	expect(body).toMatchObject({
-		sorzs: [{ provider: "reddit" }, { provider: "generic" }],
+		sorzs: [
+			{ provider: "reddit", providerName: "Reddit" },
+			{ provider: "generic", providerName: "Generic" },
+		],
 	});
 });
 
@@ -91,7 +96,9 @@ test("lists the wikipedia provider for a language site", async () => {
 	await sut.list();
 
 	const body = await sut.body();
-	expect(body).toMatchObject({ sorzs: [{ provider: "wikipedia" }] });
+	expect(body).toMatchObject({
+		sorzs: [{ provider: "wikipedia", providerName: "Wikipedia" }],
+	});
 });
 
 test("lists the geekfeminism provider for its wiki", async () => {
@@ -100,7 +107,20 @@ test("lists the geekfeminism provider for its wiki", async () => {
 	await sut.list();
 
 	const body = await sut.body();
-	expect(body).toMatchObject({ sorzs: [{ provider: "geekfeminism" }] });
+	expect(body).toMatchObject({
+		sorzs: [{ provider: "geekfeminism", providerName: "Geek Feminism" }],
+	});
+});
+
+test("lists the appropedia provider for its wiki", async () => {
+	await sut.addSorz("https://www.appropedia.org", "");
+
+	await sut.list();
+
+	const body = await sut.body();
+	expect(body).toMatchObject({
+		sorzs: [{ provider: "appropedia", providerName: "Appropedia" }],
+	});
 });
 
 test("lists only the entries of the user who asks", async () => {

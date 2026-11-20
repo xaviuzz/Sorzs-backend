@@ -30,6 +30,10 @@ export class WikipediaSearchProvider implements SearchProvider {
 		return ProviderId.wikipedia();
 	}
 
+	name(): string {
+		return "Wikipedia";
+	}
+
 	canSearch(entry: SorzEntry): boolean {
 		return this.qualification.qualifies(entry);
 	}

@@ -26,6 +26,11 @@ export class StubSearchProvider implements SearchProvider {
 		return ProviderId.reddit();
 	}
 
+	name(): string {
+		if (this.searchesAnything) return "Generic";
+		return "Reddit";
+	}
+
 	canSearch(entry: SorzEntry): boolean {
 		const isTheSite = entry.site() === this.site;
 		const canSearch = this.searchesAnything || isTheSite;

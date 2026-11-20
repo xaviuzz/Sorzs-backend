@@ -16,7 +16,7 @@ export class ListSorzs implements OwnedHandler {
 		const list = await this.repository.load(owner);
 		const sorzs = list.entries().map((entry) => ({
 			...entry.toJSON(),
-			provider: this.providers.idFor(entry).toJSON(),
+			...this.providers.describedFor(entry).toJSON(),
 		}));
 		return { sorzs };
 	}

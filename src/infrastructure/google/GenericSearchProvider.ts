@@ -13,6 +13,10 @@ export class GenericSearchProvider implements SearchProvider {
 		return ProviderId.generic();
 	}
 
+	name(): string {
+		return "Generic";
+	}
+
 	canSearch(_entry: SorzEntry): boolean {
 		return true;
 	}
