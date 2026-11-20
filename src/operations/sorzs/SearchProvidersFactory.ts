@@ -1,6 +1,7 @@
 import { DomainQualificationStrategy } from "../../domain/search/DomainQualificationStrategy.ts";
 import { SearchProviders } from "../../domain/search/SearchProviders.ts";
 import { WikipediaQualificationStrategy } from "../../domain/search/WikipediaQualificationStrategy.ts";
+import { AppropediaSearchProvider } from "../../infrastructure/appropedia/AppropediaSearchProvider.ts";
 import { GeekFeminismSearchProvider } from "../../infrastructure/geekfeminism/GeekFeminismSearchProvider.ts";
 import { GenericSearchProvider } from "../../infrastructure/google/GenericSearchProvider.ts";
 import type { WebFetch } from "../../infrastructure/http/WebFetch.ts";
@@ -27,6 +28,11 @@ export class SearchProvidersFactory {
 			),
 			new GeekFeminismSearchProvider(
 				new DomainQualificationStrategy("geekfeminism.fandom.com"),
+				this.webFetch,
+				this.contact,
+			),
+			new AppropediaSearchProvider(
+				new DomainQualificationStrategy("appropedia.org"),
 				this.webFetch,
 				this.contact,
 			),

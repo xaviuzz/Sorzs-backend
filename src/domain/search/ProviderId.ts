@@ -2,6 +2,7 @@ export type ProviderIdValue =
 	| "reddit"
 	| "wikipedia"
 	| "geekfeminism"
+	| "appropedia"
 	| "generic";
 
 export class ProviderId {
@@ -17,6 +18,10 @@ export class ProviderId {
 
 	static geekfeminism(): ProviderId {
 		return new ProviderId("geekfeminism");
+	}
+
+	static appropedia(): ProviderId {
+		return new ProviderId("appropedia");
 	}
 
 	static generic(): ProviderId {

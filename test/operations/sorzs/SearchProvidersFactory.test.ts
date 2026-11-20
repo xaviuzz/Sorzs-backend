@@ -39,6 +39,28 @@ test("a geek feminism sorz is searched on its wiki and never on Google", async (
 	expect(titles).toEqual(["AdaCamp"]);
 });
 
+test("an appropedia sorz, with or without www, is searched on its wiki and never on Google", async () => {
+	await sut.addSorz("https://appropedia.org");
+	await sut.addSorz("https://www.appropedia.org");
+
+	const titles = await sut.titlesOfSearch("solar");
+
+	expect(titles).toEqual(["Solar cooker", "Solar cooker"]);
+});
+
+test("a sorz that Appropedia does not answer is reported and the others still answer", async () => {
+	await sut.addSorz("https://www.appropedia.org");
+	await sut.addSorz("https://example.com");
+	sut.appropediaIsDown();
+
+	const reply = await sut.searchReply("solar");
+
+	expect(reply.body).toEqual({
+		results: [expect.objectContaining({ title: "Search it on Google" })],
+		failed: ["https://www.appropedia.org"],
+	});
+});
+
 test("another fandom wiki stays on the generic provider", async () => {
 	await sut.addSorz("https://starwars.fandom.com");
 
@@ -103,6 +125,12 @@ class SUT {
 	private readonly userAgents: string[] = [];
 	private wikipediaAnswers = true;
 	private geekFeminismAnswers = true;
+	private appropediaAnswers = true;
+	private readonly wikis = new Map<string, (init: RequestInit) => Response>([
+		["wikipedia.org", (init) => this.wikipedia(init)],
+		["geekfeminism.fandom.com", () => this.geekFeminism()],
+		["appropedia.org", () => this.appropedia()],
+	]);
 	private readonly providers = new SearchProvidersFactory(
 		"contact@example.org",
 		async (url, init) => this.web(url, init),
@@ -119,6 +147,10 @@ class SUT {
 
 	geekFeminismIsDown(): void {
 		this.geekFeminismAnswers = false;
+	}
+
+	appropediaIsDown(): void {
+		this.appropediaAnswers = false;
 	}
 
 	wikipediaIsDown(): void {
@@ -150,14 +182,27 @@ class SUT {
 	private async web(url: string, init: RequestInit): Promise<Response> {
 		const hostname = new URL(url).hostname;
 		let answer = new Response("", { status: 404 });
-		if (hostname.endsWith(".wikipedia.org")) answer = this.wikipedia(init);
-		if (hostname === "geekfeminism.fandom.com") answer = this.geekFeminism();
+		for (const [domain, answering] of this.wikis) {
+			const isTheDomain = hostname === domain;
+			const isASubdomain = hostname.endsWith(`.${domain}`);
+			if (isTheDomain || isASubdomain) answer = answering(init);
+		}
 		return answer;
 	}
 
 	private geekFeminism(): Response {
-		let answer = Response.json({ query: { search: [{ title: "AdaCamp" }] } });
+		let answer = Response.json({
+			query: { search: [{ title: "AdaCamp", snippet: "" }] },
+		});
 		if (!this.geekFeminismAnswers) answer = new Response("", { status: 503 });
+		return answer;
+	}
+
+	private appropedia(): Response {
+		let answer = Response.json({
+			query: { search: [{ title: "Solar cooker", snippet: "" }] },
+		});
+		if (!this.appropediaAnswers) answer = new Response("", { status: 503 });
 		return answer;
 	}
 
