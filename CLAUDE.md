@@ -32,6 +32,7 @@ The server refuses to start without `AUTH_SECRET` (signs tokens), `WIKIPEDIA_CON
 1. `make benchmark-prepare` builds the clean database (1000 users, 20 sorzs each) in `benchmark/clean/`; it takes about 10 minutes and runs once. Touch `benchmark/data/` while it runs and it fails.
 2. `./benchmark/run-pass.sh <operation|mixed> <medium|high|stress>` runs one pass from a copy of the clean database. `./benchmark/run-isolated.sh medium` runs the ten operations alone, one after another.
 3. `bun benchmark/report.ts` turns `benchmark/out/` (raw k6 output and container samples, git ignores it) into the Markdown reports in `benchmark/results/`. The reports and `benchmark/results/<date>-baseline.md`, the reading of them, are committed.
+4. `PROBE=1 ./benchmark/run-pass.sh <operation> medium` adds a `health.check` probe at 10 per second. Use it to tell an operation that only spends CPU (the probe stays near 0 ms) from one that holds the thread (the probe waits as long as it does); an isolated pass cannot tell them apart. It rewrites that pass's `.stats` files in `benchmark/out/`.
 
 `make benchmark-up` and `make benchmark-down` start and remove the container by hand. A pass leaves no container behind.
 
