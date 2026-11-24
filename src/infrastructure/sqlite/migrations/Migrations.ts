@@ -2,6 +2,7 @@ import type { Database } from "bun:sqlite";
 import { AddOwnerToEntries } from "./AddOwnerToEntries.ts";
 import { CreateEntriesTable } from "./CreateEntriesTable.ts";
 import { CreateUsersTable } from "./CreateUsersTable.ts";
+import { IndexEntriesByOwner } from "./IndexEntriesByOwner.ts";
 import type { Migration } from "./Migration.ts";
 import { MigrationFailedError } from "./MigrationFailedError.ts";
 import { NewerDatabaseError } from "./NewerDatabaseError.ts";
@@ -16,6 +17,7 @@ export class Migrations {
 			new AddOwnerToEntries(),
 			new RenameOldIdentifierKey(),
 			new CreateUsersTable(),
+			new IndexEntriesByOwner(),
 		]);
 	}
 

@@ -2,13 +2,14 @@ import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
 import { Migrations } from "../../../../src/infrastructure/sqlite/migrations/Migrations.ts";
 
-test("a new database lands on the last version with both tables", () => {
+test("a new database lands on the last version with both tables and the owner index", () => {
 	const database = new Database(":memory:");
 
 	Migrations.standard().apply(database);
 
-	expect(versionOf(database)).toBe(4);
+	expect(versionOf(database)).toBe(5);
 	expect(tablesOf(database)).toEqual(["entries", "users"]);
+	expect(indexesOf(database)).toContain("entries_owner");
 });
 
 test("a database saved before there were versions keeps its rows and lands on the last version", () => {
@@ -31,7 +32,7 @@ test("a database saved before there were versions keeps its rows and lands on th
 		sorzId: "old-id",
 		name: "Example",
 	});
-	expect(versionOf(database)).toBe(4);
+	expect(versionOf(database)).toBe(5);
 });
 
 test("a database that already has every effect lands on the last version unchanged", () => {
@@ -50,7 +51,7 @@ test("a database that already has every effect lands on the last version unchang
 		owner: string;
 	};
 	expect(row.owner).toBe("ana");
-	expect(versionOf(database)).toBe(4);
+	expect(versionOf(database)).toBe(5);
 });
 
 function versionOf(database: Database): number {
@@ -58,6 +59,17 @@ function versionOf(database: Database): number {
 		user_version: number;
 	};
 	return row.user_version;
+}
+
+function indexesOf(database: Database): string[] {
+	const rows = database
+		.query("SELECT name FROM sqlite_master WHERE type = 'index'")
+		.all() as { name: string }[];
+	const names: string[] = [];
+	for (const row of rows) {
+		names.push(row.name);
+	}
+	return names;
 }
 
 function tablesOf(database: Database): string[] {
