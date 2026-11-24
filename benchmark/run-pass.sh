@@ -22,4 +22,5 @@ sampler=$!
 
 script="benchmark/k6/operation.js"
 if [ "$operation" = "mixed" ]; then script="benchmark/k6/mixed.js"; fi
+if [ "${PROBE:-}" = "1" ]; then script="benchmark/k6/probe.js"; fi
 OPERATION="$operation" PROFILE="$profile" k6 run --quiet "$script" || true
