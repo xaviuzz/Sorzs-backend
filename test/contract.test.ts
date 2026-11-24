@@ -7,6 +7,7 @@ import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "../src/operations/OperationRegistry.ts";
 import { SearchSettings } from "../src/operations/sorzs/SearchSettings.ts";
 import { OpenApiRoutes } from "./OpenApiRoutes.ts";
+import { FakePageReader } from "./operations/sorzs/FakePageReader.ts";
 import { serverEnvironment } from "./ServerEnvironment.ts";
 
 let sut: SUT;
@@ -35,6 +36,7 @@ class SUT {
 			MigratedDatabaseFactory.standard().inFolder(dataDir),
 			AuthSettings.fromEnv(serverEnvironment()),
 			SearchSettings.fromEnv(serverEnvironment()),
+			new FakePageReader(),
 		).names();
 		return new SUT(contract.names, registered);
 	}

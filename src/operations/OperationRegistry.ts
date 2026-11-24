@@ -1,5 +1,5 @@
 import type { Database } from "bun:sqlite";
-import { HttpPageReader } from "../infrastructure/http/HttpPageReader.ts";
+import type { PageReader } from "../domain/sorz/PageReader.ts";
 import { SqliteSorzListRepository } from "../infrastructure/sqlite/SqliteSorzListRepository.ts";
 import type { Routes } from "../Routes.ts";
 import { AdminAccess } from "./auth/AdminAccess.ts";
@@ -34,9 +34,9 @@ export class OperationRegistry {
 		database: Database,
 		auth: AuthSettings,
 		search: SearchSettings,
+		reader: PageReader,
 	): OperationRegistry {
 		const repository = new SqliteSorzListRepository(database);
-		const reader = new HttpPageReader();
 		const providers = search.providers();
 		const signer = auth.signer();
 		const users = auth.users(database);

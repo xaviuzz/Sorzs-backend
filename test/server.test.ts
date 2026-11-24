@@ -2,6 +2,7 @@ import { afterAll, beforeAll, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { HttpPageReader } from "../src/infrastructure/http/HttpPageReader.ts";
 import { AuthSettings } from "../src/operations/auth/AuthSettings.ts";
 import { StaticSettings } from "../src/operations/settings/StaticSettings.ts";
 import { SearchSettings } from "../src/operations/sorzs/SearchSettings.ts";
@@ -185,6 +186,7 @@ class SUT {
 			AuthSettings.fromEnv(variables),
 			SearchSettings.fromEnv(variables),
 			StaticSettings.fromEnv(variables),
+			new HttpPageReader(),
 		);
 	}
 

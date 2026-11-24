@@ -1,3 +1,4 @@
+import type { PageReader } from "./domain/sorz/PageReader.ts";
 import { MigratedDatabaseFactory } from "./infrastructure/sqlite/MigratedDatabaseFactory.ts";
 import type { AuthSettings } from "./operations/auth/AuthSettings.ts";
 import { OperationRegistry } from "./operations/OperationRegistry.ts";
@@ -13,9 +14,15 @@ export class Server {
 		auth: AuthSettings,
 		search: SearchSettings,
 		files: StaticSettings,
+		reader: PageReader,
 	): Server {
 		const database = MigratedDatabaseFactory.standard().inFolder(dataDir);
-		const operations = OperationRegistry.standard(database, auth, search);
+		const operations = OperationRegistry.standard(
+			database,
+			auth,
+			search,
+			reader,
+		);
 		const routes = operations.routes();
 		const fallback = files.fallback(Object.keys(routes));
 		const bunServer = Bun.serve({

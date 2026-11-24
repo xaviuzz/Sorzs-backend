@@ -1,3 +1,4 @@
+import { HttpPageReader } from "./infrastructure/http/HttpPageReader.ts";
 import { AuthSettings } from "./operations/auth/AuthSettings.ts";
 import { StaticSettings } from "./operations/settings/StaticSettings.ts";
 import { SearchSettings } from "./operations/sorzs/SearchSettings.ts";
@@ -9,4 +10,4 @@ const auth = AuthSettings.fromEnv(Bun.env);
 const search = SearchSettings.fromEnv(Bun.env);
 const files = StaticSettings.fromEnv(Bun.env);
 
-Server.start(port, dataDir, auth, search, files);
+Server.start(port, dataDir, auth, search, files, new HttpPageReader());
