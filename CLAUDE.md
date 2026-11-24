@@ -25,6 +25,16 @@ The server refuses to start without `AUTH_SECRET` (signs tokens), `WIKIPEDIA_CON
 
 `make server-up` starts the Ubuntu test server (sshd on 2222, app on 3001, host networking, temporary key under `/tmp`). `make deploy` runs `deploy/deploy.sh` against it with the e2e values and `../frontend/dist`, which you build first. `make server-down` removes both. The real server takes the same `DEPLOY_*` and `APP_PORT` variables plus the three secrets from the caller. Why and limits: `.claude/decisions/one-bun-serves-front-and-api-deployed-over-ssh.md`.
 
+## Benchmark
+
+`benchmark/` measures the speed of every operation against the Docker image `benchmark/Dockerfile`, limited to 2 CPUs, with fake providers and a fake page reader that answer after `BENCHMARK_LATENCY_MS` (default 100). It needs `k6` installed and port 3000 free. The figures are a local baseline, never production. Why: `.claude/decisions/the-benchmark-has-its-own-start-entry-with-fake-web.md`, `.claude/decisions/benchmark-users-log-in-once-and-reuse-the-token.md`; the plan: `.claude/specs/backend-benchmark.md`.
+
+1. `make benchmark-prepare` builds the clean database (1000 users, 20 sorzs each) in `benchmark/clean/`; it takes about 10 minutes and runs once. Touch `benchmark/data/` while it runs and it fails.
+2. `./benchmark/run-pass.sh <operation|mixed> <medium|high|stress>` runs one pass from a copy of the clean database. `./benchmark/run-isolated.sh medium` runs the ten operations alone, one after another.
+3. `bun benchmark/report.ts` turns `benchmark/out/` (raw k6 output and container samples, git ignores it) into the Markdown reports in `benchmark/results/`. The reports and `benchmark/results/<date>-baseline.md`, the reading of them, are committed.
+
+`make benchmark-up` and `make benchmark-down` start and remove the container by hand. A pass leaves no container behind.
+
 ## Stack
 
 `Bun.serve` and `bun test`, no framework, no validation library. Biome, TypeScript and `@types/he` are the only dev dependencies; `he` (decodes HTML character references in titles and Wikipedia excerpts) is the only runtime one. Add nothing else without asking.

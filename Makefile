@@ -14,7 +14,7 @@ AUTH_SECRET ?= dev-secret
 WIKIPEDIA_CONTACT ?= dev@example.org
 SEED_USERS ?= xaviuzz:p1casso:admin,ana:pueblos
 
-.PHONY: server-up server-down deploy
+.PHONY: server-up server-down deploy benchmark-up benchmark-down benchmark-prepare benchmark-reset
 
 server-up:
 	docker build -t $(SERVER_IMAGE) -f deploy/Dockerfile.server deploy
@@ -36,3 +36,35 @@ deploy:
 	DEPLOY_HOST=$(DEPLOY_HOST) DEPLOY_USER=$(DEPLOY_USER) DEPLOY_PORT=$(DEPLOY_PORT) DEPLOY_KEY=$(DEPLOY_KEY) \
 		APP_PORT=$(APP_PORT) AUTH_SECRET=$(AUTH_SECRET) WIKIPEDIA_CONTACT=$(WIKIPEDIA_CONTACT) SEED_USERS='$(SEED_USERS)' \
 		deploy/deploy.sh $(FRONTEND_DIST)
+
+BENCHMARK_NAME := sorzs-benchmark
+BENCHMARK_PORT ?= 3000
+BENCHMARK_CPUS ?= 2
+BENCHMARK_LATENCY_MS ?= 100
+BENCHMARK_DATA ?= $(CURDIR)/benchmark/data
+BENCHMARK_CLEAN ?= $(CURDIR)/benchmark/clean
+
+benchmark-up:
+	docker build -t $(BENCHMARK_NAME) -f benchmark/Dockerfile .
+	mkdir -p $(BENCHMARK_DATA)
+	docker run -d --name $(BENCHMARK_NAME) --network host --cpus=$(BENCHMARK_CPUS) \
+		-e PORT=$(BENCHMARK_PORT) -e AUTH_SECRET=$(AUTH_SECRET) -e WIKIPEDIA_CONTACT=$(WIKIPEDIA_CONTACT) \
+		-e SEED_USERS='$(SEED_USERS)' -e BENCHMARK_LATENCY_MS=$(BENCHMARK_LATENCY_MS) \
+		-v $(BENCHMARK_DATA):/data $(BENCHMARK_NAME)
+
+benchmark-down:
+	-docker rm -f $(BENCHMARK_NAME)
+
+benchmark-prepare:
+	-docker rm -f $(BENCHMARK_NAME)
+	rm -rf $(BENCHMARK_DATA) $(BENCHMARK_CLEAN)
+	$(MAKE) benchmark-up BENCHMARK_LATENCY_MS=0
+	until curl -sf -X POST localhost:$(BENCHMARK_PORT)/health.check -d '{"header":{"callId":"up"}}' > /dev/null; do sleep 1; done
+	BENCHMARK_URL=http://localhost:$(BENCHMARK_PORT) bun benchmark/prepare-data.ts
+	$(MAKE) benchmark-down
+	cp -r $(BENCHMARK_DATA) $(BENCHMARK_CLEAN)
+
+benchmark-reset:
+	-docker rm -f $(BENCHMARK_NAME)
+	rm -rf $(BENCHMARK_DATA)
+	cp -r $(BENCHMARK_CLEAN) $(BENCHMARK_DATA)
