@@ -5,6 +5,10 @@ export class Password {
 		return new Password(Bun.password.hashSync(plain));
 	}
 
+	static async hashed(plain: string): Promise<Password> {
+		return new Password(await Bun.password.hash(plain));
+	}
+
 	static fromHash(hash: string): Password {
 		return new Password(hash);
 	}

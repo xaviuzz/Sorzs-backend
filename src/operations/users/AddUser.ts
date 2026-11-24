@@ -13,7 +13,9 @@ export class AddUser implements OwnedHandler {
 
 	async execute(call: Call, _asker: Username): Promise<unknown> {
 		const name = Username.from(call.body.requireFilledText("username"));
-		const password = Password.hashing(call.body.requireFilledText("password"));
+		const password = await Password.hashed(
+			call.body.requireFilledText("password"),
+		);
 		const role = Role.from(call.body.requireText("role"));
 		const joining = new RegisteredUser(name, password, role);
 		await this.users.add(joining);
