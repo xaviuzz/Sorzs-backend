@@ -7,7 +7,14 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!dist"]
+		"includes": [
+			"**",
+			"!dist",
+			"!benchmark/out",
+			"!benchmark/data",
+			"!benchmark/clean",
+			"!benchmark/results"
+		]
 	},
 	"formatter": {
 		"enabled": true,
