@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { SorzEntry } from "../../domain/sorz-list/SorzEntry.ts";
 import { SorzList } from "../../domain/sorz-list/SorzList.ts";
 import type { SorzListRepository } from "../../domain/sorz-list/SorzListRepository.ts";
-import { Username } from "../../domain/user/Username.ts";
+import type { Username } from "../../domain/user/Username.ts";
 
 export class SqliteSorzListRepository implements SorzListRepository {
 	constructor(private readonly database: Database) {}
@@ -17,14 +17,31 @@ export class SqliteSorzListRepository implements SorzListRepository {
 	}
 
 	async loadEveryList(): Promise<SorzList[]> {
-		const owners = this.database
-			.query("SELECT DISTINCT owner FROM entries ORDER BY owner")
-			.all() as { owner: string }[];
+		const query = this.database.query(
+			"SELECT owner, document FROM entries ORDER BY owner, position",
+		);
+		const rows = query.all() as { owner: string; document: string }[];
+		const rowsByOwner = SqliteSorzListRepository.groupedByOwner(rows);
 		const lists: SorzList[] = [];
-		for (const { owner } of owners) {
-			lists.push(await this.load(Username.from(owner)));
+		for (const rowsOfOwner of rowsByOwner.values()) {
+			lists.push(SqliteSorzListRepository.listOf(rowsOfOwner));
 		}
 		return lists;
+	}
+
+	private static groupedByOwner(
+		rows: { owner: string; document: string }[],
+	): Map<string, { document: string }[]> {
+		const rowsByOwner = new Map<string, { document: string }[]>();
+		for (const row of rows) {
+			let rowsOfOwner = rowsByOwner.get(row.owner);
+			if (!rowsOfOwner) {
+				rowsOfOwner = [];
+				rowsByOwner.set(row.owner, rowsOfOwner);
+			}
+			rowsOfOwner.push(row);
+		}
+		return rowsByOwner;
 	}
 
 	private static listOf(rows: { document: string }[]): SorzList {
