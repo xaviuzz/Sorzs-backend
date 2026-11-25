@@ -14,7 +14,10 @@ AUTH_SECRET ?= dev-secret
 WIKIPEDIA_CONTACT ?= dev@example.org
 SEED_USERS ?= xaviuzz:p1casso:admin,ana:pueblos
 
-.PHONY: server-up server-down deploy benchmark-up benchmark-down benchmark-prepare benchmark-reset
+.PHONY: test server-up server-down deploy benchmark-up benchmark-down benchmark-prepare benchmark-reset
+
+test:
+	bun run test
 
 server-up:
 	docker build -t $(SERVER_IMAGE) -f deploy/Dockerfile.server deploy
